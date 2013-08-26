@@ -2,22 +2,22 @@
 ###                       CHERRYPY CONFIGURATION                            ###
 ###############################################################################
 
-SERVER_NAME = 'XXXXX VALUE XXXXX';
+SERVER_NAME = 'http://127.0.0.1:8080/';
 
 
 ###############################################################################
 ###                       COUCHDB CONFIGURATION                             ###
 ###############################################################################
 
-SERVERDB_NAME = 'XXXXX VALUE XXXXX';
-SERVERDB_PORT = 'XXXXX VALUE XXXXX';
-DATABASE_NAME = 'XXXXX VALUE XXXXX';
+SERVERDB_NAME = 'localhost';
+SERVERDB_PORT = '5984';
+DATABASE_NAME = 'cern_cms_sheduller4';
 
-LINK_SORTED_DEADLINE_TIME_BLOCKS = '_design/XXXXX VALUE XXXXX';
-LINK_SORTED_PRIORITY_TIME_BLOCKS = '_design/XXXXX VALUE XXXXX';
+LINK_SORTED_DEADLINE_TIME_BLOCKS = '_design/deadline_time_blocks/_view/sorted';
+LINK_SORTED_PRIORITY_TIME_BLOCKS = '_design/priority_time_blocks/_view/sorted';
 
-LINK_ID_OF_PLANDED_TIME_BLOCKS = '_design/XXXXX VALUE XXXXX';
-LINK_PLANDED_TIME_BLOCKS = '_design/XXXXX VALUE XXXXX';
+LINK_ID_OF_PLANDED_TIME_BLOCKS = '_design/planedBlocks/_view/ids';
+LINK_PLANDED_TIME_BLOCKS = '_design/planedBlocks/_view/all';
 
 
 
