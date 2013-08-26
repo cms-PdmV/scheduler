@@ -2,7 +2,8 @@ import cherrypy
 import sys
 from datetime import datetime
 from datetime import timedelta
-import httplib, simplejson  # http://cheeseshop.python.org/pypi/simplejson
+import httplib  # http://cheeseshop.python.org/pypi/simplejson
+import json as simplejson
 
 import json
 import urllib2
