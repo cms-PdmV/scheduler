@@ -2,7 +2,8 @@ import cherrypy
 import sys
 import os
 from datetime import datetime
-import httplib, simplejson  # http://cheeseshop.python.org/pypi/simplejson
+import httplib  # http://cheeseshop.python.org/pypi/simplejson
+import json as simplejson
 import json
 import urllib2
 
