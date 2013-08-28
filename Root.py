@@ -66,15 +66,15 @@ class TimeTablePage(object):
 	  timeAfter = datetime.now();
 
 	  diffTime = timeAfter - timeBefore;
-#	  print "Time:" + str(diffTime);
 	  microseconds = diffTime.microseconds + 1000000*diffTime.seconds;
-#	  print "TimeSecond:" + str(microseconds);
-	  measurement += str(microseconds);
+	  measurement += str(microseconds/1000);
 	  if i != (ATTEMPS -1):
 	     measurement += ", ";
 	measurement += ")";
-	
+
+        print "Measurement:";	
 	print measurement;
+
 	return open(os.path.join('', 'html', 'timeTable.html'));
     index.exposed = True
 
