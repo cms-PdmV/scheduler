@@ -314,8 +314,9 @@ def shedule(startSchedulingDate):
 	    startEventI = planedBlockVaulueI["startEvent"];
 	    eventsCountI = planedBlockVaulueI["eventsCount"];
 	    timePartCountI = planedBlockVaulueI["timePartCount"];
-
-	    randomValue = i%6;
+            priorityI = planedBlockVaulueI["priority"];
+            
+	    randomValue = str(int(priorityI) -1); #%10;
 
 	    outputI = "{event:" + startEventI + ", ";
 	    outputI += "hour:"  + "\"" + startDateI + "\"" + ", ";
