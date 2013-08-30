@@ -288,8 +288,8 @@ var SchedulerDataModelClass = function() {
 
       this.buckets = 9;
 
-      this.colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4",
-	  "#1d91c0","#225ea8","#253494","#081d58"];
+      this.colors = ["#ffffd9", "#ffffbf", "#f4fcbe", "#e2ffbf", "#c7e9b4",
+          "#7fcdbb", "#63d9c6", "#41b6c4", "#1d91c0","#225ea8","#253494"];
 
       this.dateLabelsCount = 24;
       var dateDiff = this.endDate.minusDate(this.startDate);
@@ -748,7 +748,7 @@ function rectangleZoom() {
 
       if (d3.event.sourceEvent.wheelDelta) {  /* IE/Opera. */
 	  delta = event.wheelDelta/120;
-	  
+
       } else if (event.detail) { /** Mozilla case. */
       /** In Mozilla, sign of delta is different than in IE.
 	* Also, delta is multiple of 3.
