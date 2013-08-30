@@ -2,7 +2,7 @@
 ###                       CHERRYPY CONFIGURATION                            ###
 ###############################################################################
 import socket
-SERVER_NAME = 'http://'+socket.gethostname()+':8080/';
+SERVER_NAME = 'http://'+socket.gethostname()+':80/';
 
 
 ###############################################################################
