@@ -43,7 +43,10 @@ class LogInPage(object):
 	if (isLogged):
            raise cherrypy.HTTPRedirect(SERVER_NAME + "timeTable/");
 	else:
-	   return open(os.path.join('', 'html', 'logInForm.html'));
+	  authentication.logOut();
+	  generator = HTMLPagesGenerator();
+	  return generator.generateLogInForm();
+	  
     index.exposed = True
 
 
@@ -75,17 +78,12 @@ class TimeTablePage(object):
         print "Measurement:";	
 	print measurement;
 
-	return open(os.path.join('', 'html', 'timeTable.html'));
+        generator = HTMLPagesGenerator();
+        return generator.generateTimeTable();
     index.exposed = True
 
 
 class Root(object):
-#    _cp_config = {
-#      'tools.sessions.on': True,
-#      'tools.session_auth.on': True,
-#      'tools.session_auth.check_username_and_password': checkLoginAndPassword,
-#      'tools.session_auth.on_check': loadUserByUsername,
-#    }
 
     stop = Stop();
 
@@ -102,11 +100,6 @@ class Root(object):
     redirect.exposed = True
 
     def index(self):
-#        cherrypy.config.update({'tools.sessions.on': True});
-#        cherrypy.session.acquire_lock();
-#        section = cherrypy.session.get('user');
-#        cherrypy.session['count'] = 5;
-
         return self.welcome.index();
     index.exposed = True
 
