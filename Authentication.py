@@ -5,7 +5,7 @@ class Authentication(object):
       self.USER_NAME = self.ANONYM;
       
     def check(self, name, password):
-      usernNames = ["sbalcar", "anorkus", "jrvlimant", "jvlimant", "gfranzoni"]
+      userNames = ["sbalcar", "anorkus", "jrvlimant", "jvlimant", "gfranzoni"]
       if (name in userNames):
 	  self.USER_NAME = name;
 	  return True;
