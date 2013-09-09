@@ -260,6 +260,9 @@ var DateClass = function(dateString) {
 };
 
 
+var PRIORITY_TIME_BLOCK_TYPE = 'planedPriorityBlock';
+var DEADLINE_TIME_BLOCK_TYPE = 'planedDeadlineBlock';
+
 var SchedulerDataModelClass = function() {
 
     this.initialization = function() {
@@ -289,7 +292,7 @@ var SchedulerDataModelClass = function() {
       this.buckets = 9;
 
       this.colors = ["#ffffd9", "#ffffbf", "#f4fcbe", "#e2ffbf", "#c7e9b4",
-          "#7fcdbb", "#63d9c6", "#41b6c4", "#1d91c0","#225ea8","#253494"];
+          "#7fcdbb", "#63d9c6", "#41b6c4", "#1d91c0","#225ea8", "#253494"];
 
       this.dateLabelsCount = 24;
       var dateDiff = this.endDate.minusDate(this.startDate);
@@ -312,14 +315,17 @@ var SchedulerDataModelClass = function() {
 	eventI = Math.round(eventI + eventPart);
 	this.events.push('' + eventI + ' E ');
       }
-      this.data = this.getOverlapedTimeBlocks();
-
+      
+      this.getOverlapedTimeBlocks();
     };
 
     // Function returns only blocks which are inside of showed space
     this.getOverlapedTimeBlocks = function() {
-      
-       reusultTimeBlocks = [];
+
+	this.planedBlocks = [];
+	this.planedPriorityBlocks = [];
+	this.planedDeadlineBlocks = [];
+
        for (var blockIndex = 0;
 	    blockIndex < this.dataSource.length; blockIndex++) {
 
@@ -330,7 +336,8 @@ var SchedulerDataModelClass = function() {
 	  dateWidth = timeBlockI["width"];
 	  numEvent = timeBlockI["event"];
 	  numHeight = timeBlockI["height"];
-	  
+	  typeB = timeBlockI["type"];
+
 	  startDateI = new DateClass(dateHour);
 	  diffDateI = new DateDifferenceClass(dateWidth);
 	  endDateI = startDateI.plusDifference(diffDateI);
@@ -379,11 +386,17 @@ var SchedulerDataModelClass = function() {
 		 timeBlockI["width"] = newWidth.toString();
 	      }
 
-	      reusultTimeBlocks.push(timeBlockI);
+
+	      if (typeB == PRIORITY_TIME_BLOCK_TYPE) {
+		  this.planedPriorityBlocks.push(timeBlockI);
+	      } else if (typeB == DEADLINE_TIME_BLOCK_TYPE) {
+		  this.planedDeadlineBlocks.push(timeBlockI);
+	      } else { alert("Error:Bad input from database."); }
+	      this.planedBlocks.push(timeBlockI);
+	      
 	  }
        }
-       
-       return reusultTimeBlocks;
+
     }
 
     this.getRecountedDifferentDate = function(differentDate) {
@@ -454,6 +467,13 @@ var SchedulerDataModelClass = function() {
     }    
     this.getTimeBlockHeight = function(d) {
       return this.getRecountedDifferentEvent(d.height);
+    }
+    
+    this.getTimeBlockType = function(d) {
+      return d.type;
+    }
+    this.isPriorityTimeBlock = function(d) {
+        return d.type == PRIORITY_TIME_BLOCK_TYPE;
     }
 
     this.getLegendElementX = function(numberOfElement) {
@@ -567,10 +587,24 @@ var SchedulerDataModelClass = function() {
 
 };
 
+function createBlockId(event, hour, isDeadlineBlock) {
+  
+  var eventHour = event + "-" + hour;
+  var eventHourId = eventHour.replace(":","-").replace(":","-").replace(" ","-");
+  
+  if (isDeadlineBlock) {
+    eventHourId = "dB-" + eventHourId;
+  } else {
+    eventHourId = "pB-" + eventHourId;
+  }
+  
+  return eventHourId;
+};
+
 
 function drawTimeTable() {
   var colorScale = d3.scale.quantile()
-      .domain([0, d3.max(dataModel.data, function (d) { return d.value; })])
+      .domain([0, d3.max(dataModel.planedBlocks, function (d) { return d.value; })])
       .range(dataModel.colors);
 
   var backgroundDragBehavior = d3.behavior.drag()	
@@ -584,6 +618,32 @@ function drawTimeTable() {
       .append("g")
       .attr("transform", "translate(" + dataModel.margin.left + "," + dataModel.margin.top + ")");
 
+  svg.append("text")
+      .attr("class", "title")
+      .text("Requests schedule")
+      .attr("x", 320)
+      .attr("y", -92 );
+
+  svg.append("image")
+    .attr("xlink:href", "../javaScript/cern.gif")
+    .attr("x", -40)
+    .attr("y", -110)
+    .attr("width", 60)
+    .attr("height", 60);
+
+// http://stackoverflow.com/questions/17776641/fill-rect-with-pattern
+  svg.append('defs')
+    .append('pattern')
+      .attr('id', 'diagonalHatch')
+      .attr('patternUnits', 'userSpaceOnUse')
+      .attr('width', 4)
+      .attr('height', 4)
+    .append('path')
+      .attr('d', 'M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2')
+      .attr('stroke', '#000000')
+      .attr('stroke-width', 0.75);
+    
+    
   var eventLabels = svg.selectAll(".dayLabel")
       .data(dataModel.events)
       .enter().append("text")
@@ -604,48 +664,6 @@ function drawTimeTable() {
 	.attr("transform", function(d, i) { return "rotate(-30, " + (dataModel.getDateLabelX(i)) + "," + (dataModel.getDateLabelY(i)) + ")"; })
 	.attr("class", function(d, i) { return ((i >= 0 && i <= 100) ? "timeLabel mono axis axis-worktime" : "timeLabel mono axis"); });
 
-  //http://jsfiddle.net/RRCyq/2/
-  //http://orangevolt.blogspot.ch/2013/04/d3js-how-to-create-simple-state-machine.html
-  var rectangleDragBehavior = d3.behavior.drag()
-      .origin(Object)
-      .on("drag", rectangleDraged)
-      .on("dragend", rectangleDragended);
-
-  var bagroundMap = svg.selectAll(".hour")
-      .data(dataModel.getBacgroundRectangles())
-      .enter().append("rect")
-      .attr("x", function(d) { return dataModel.getTimeBlockX(d); })
-      .attr("y", function(d) { return dataModel.height -dataModel.getTimeBlockY(d) -dataModel.getTimeBlockHeight(d); })
-      .attr("width", function(d) { return  dataModel.getTimeBlockWidth(d); })
-      .attr("height", function(d) { return dataModel.getTimeBlockHeight(d); })
-      .attr("value", function(d, i) { return -1 })
-      .style("fill", function(d, i) { return "#FFFFFF"; })
-      .on("click", backgroundClicked).call(backgroundDragBehavior)
-      .call(d3.behavior.zoom().on("zoom", rectangleZoom));
-
-  var heatMap = svg.selectAll(".hour")
-      .data(dataModel.data)
-      .enter().append("rect")
-      .attr("x", function(d) { return dataModel.getTimeBlockX(d); })
-      .attr("y", function(d) { return dataModel.height -dataModel.getTimeBlockY(d) -dataModel.getTimeBlockHeight(d); })
-      .attr("rx", 4)
-      .attr("ry", 4)
-      .attr("class", "hour bordered")
-      .attr("width", function(d) { return  dataModel.getTimeBlockWidth(d); })
-      .attr("height", function(d) { return dataModel.getTimeBlockHeight(d); })
-      .attr("value", function(d) { return d.value; })
-      .style("fill", function(d) { return dataModel.colors[d.value +1]; })
-  //   .on("touchmove", startup)
-  //   .on("click", startup())
-      .on("click", rectangleClicked).call(rectangleDragBehavior)
-      .call(d3.behavior.zoom().on("zoom", rectangleZoom));
-
-  d3.selectAll('rect').classed("selected", false);
-
-  heatMap.transition().duration(2000)
-      .style("fill", function(d) { return dataModel.colors[d.value]; });
-  heatMap.append("title").text(function(d) { return d.value; });
-
   var legend = svg.selectAll(".legend")
       .data([0].concat(colorScale.quantiles()), function(d) { return d; })
       .enter().append("g")
@@ -663,6 +681,101 @@ function drawTimeTable() {
       .text(function(d, i) { return "≥ " + i; })
       .attr("x", function(d, i) { return dataModel.getLegendElementX(i); })
       .attr("y", dataModel.height + 2*dataModel.getLegendElementHeight() );
+    
+  legend.append("rect")
+      .attr("x", function(d) { return dataModel.getLegendElementX(0); })
+      .attr("y", dataModel.height + 3*dataModel.getLegendElementHeight() )
+      .attr("width", dataModel.getLegendElementWidth())
+      .attr("height", dataModel.getLegendElementHeight() )
+      .attr('fill', 'url(#diagonalHatch)')
+      .style("stroke", "#000000");
+
+  legend.append("text")
+      .attr("class", "mono")
+      .text("Priority values")
+      .attr("x", dataModel.getLegendElementX(10.5) )
+      .attr("y", dataModel.height + 3*dataModel.getLegendElementHeight() );
+
+  legend.append("text")
+      .attr("class", "mono")
+      .text("Priority blocks")
+      .attr("x", dataModel.getLegendElementX(0) )
+      .attr("y", dataModel.height + 5*dataModel.getLegendElementHeight() );
+
+  legend.append("rect")
+      .attr("x", function(d) { return dataModel.getLegendElementX(2); })
+      .attr("y", dataModel.height + 3*dataModel.getLegendElementHeight() )
+      .attr("width", dataModel.getLegendElementWidth())
+      .attr("height", dataModel.getLegendElementHeight() )
+      .attr('fill', "#FFFFFF")
+      .style("stroke", "#000000");
+
+   legend.append("text")
+      .attr("class", "mono")
+      .text("Deadline blocks")
+      .attr("x", dataModel.getLegendElementX(2) )
+      .attr("y", dataModel.height + 5*dataModel.getLegendElementHeight() );
+
+  //http://jsfiddle.net/RRCyq/2/
+  //http://orangevolt.blogspot.ch/2013/04/d3js-how-to-create-simple-state-machine.html
+  var rectangleDragBehavior = d3.behavior.drag()
+      .origin(Object)
+      .on("drag", rectangleDraged)
+      .on("dragend", rectangleDragended);
+
+  var backgroundMap = svg.selectAll(".hour")
+      .data(dataModel.getBacgroundRectangles())
+      .enter().append("rect")
+      .attr("myID", function(d) { return -1; })
+      .attr("x", function(d) { return dataModel.getTimeBlockX(d); })
+      .attr("y", function(d) { return dataModel.height -dataModel.getTimeBlockY(d) -dataModel.getTimeBlockHeight(d); })
+      .attr("width", function(d) { return  dataModel.getTimeBlockWidth(d); })
+      .attr("height", function(d) { return dataModel.getTimeBlockHeight(d); })
+      .attr("value", function(d, i) { return -1 })
+      .style("fill", function(d, i) { return "#FFFFFF"; })
+      .on("click", backgroundClicked).call(backgroundDragBehavior)
+      .call(d3.behavior.zoom().on("zoom", rectangleZoom));
+
+  var heatMap = svg.selectAll(".hour")
+      .data(dataModel.planedBlocks)
+      .enter().append("rect")
+      .attr("myID", function(d) { return createBlockId(d.event, d.hour, true); })
+      .attr("type", function(d) { return dataModel.getTimeBlockType(d); })
+      .attr("x", function(d) { return dataModel.getTimeBlockX(d); })
+      .attr("y", function(d) { return dataModel.height -dataModel.getTimeBlockY(d) -dataModel.getTimeBlockHeight(d); })
+      .attr("rx", 4)
+      .attr("ry", 4)
+      .attr("class", function(d) { return "bordered noSelected " + createBlockId(d.event, d.hour, true); })
+      .attr("width", function(d) { return  dataModel.getTimeBlockWidth(d); })
+      .attr("height", function(d) { return dataModel.getTimeBlockHeight(d); })
+      .attr("value", function(d) { return d.value; })
+      .style("fill", function(d) { return dataModel.colors[d.value +1]; })
+      .on("click", rectangleClicked).call(rectangleDragBehavior)
+      .call(d3.behavior.zoom().on("zoom", rectangleZoom))
+
+  var priorityBlocksHatch = svg.selectAll(".hour2")
+      .data(dataModel.planedPriorityBlocks)
+      .enter().append("rect")
+      .attr("myID", function(d) { return createBlockId(d.event, d.hour, true); })
+      .attr("type", PRIORITY_TIME_BLOCK_TYPE)
+      .attr("x", function(d) { return dataModel.getTimeBlockX(d); })
+      .attr("y", function(d) { return dataModel.height -dataModel.getTimeBlockY(d) -dataModel.getTimeBlockHeight(d); })
+      .attr("rx", 4)
+      .attr("ry", 4)
+      .attr("width", function(d) { return  dataModel.getTimeBlockWidth(d); })
+      .attr("height", function(d) { return dataModel.getTimeBlockHeight(d); })
+      .attr("value", function(d) { return d.value; })
+      .attr("class", function(d) { return "bordered noSelected hatched " + createBlockId(d.event, d.hour, true); })
+      .attr('fill', 'url(#diagonalHatch)') 
+      .on("click", rectangleClicked).call(rectangleDragBehavior)
+      .call(d3.behavior.zoom().on("zoom", rectangleZoom));
+
+  d3.selectAll('rect').classed("selected", false);
+
+  heatMap.transition().duration(2000)
+      .style("fill", function(d) { return dataModel.colors[d.value]; });
+  heatMap.append("title").text(function(d) { return d.value; });
+  priorityBlocksHatch.append("title").text(function(d) { return d.value; });
 
 }
 
@@ -674,18 +787,24 @@ function rectangleClicked(dIn) {
     if (isSelected) {
       selection = d3.select(this);
       selection.style("fill", "#FF0000");
-//     selection.classed("selected", true);
 
       var outputString = "Value: " + dIn.value + "\n" +
       "EventStartNumber: " + dIn.event + "\n" +
       "EventStartDate: " + dIn.hour + "\n" +
       "Height: " + dIn.height + "\n" +
       "Width: " + dIn.width;
-	    
+
       alert(outputString);
     } else {
-      selection = d3.select(this);
-      selection.style("fill", dataModel.colors[selection.attr('value')]);
+	selection = d3.select(this);
+	var typePos = selection.attr('type');
+	var valuePos = selection.attr('value');
+
+	if (typePos == DEADLINE_TIME_BLOCK_TYPE) {
+	  selection.style("fill", dataModel.colors[valuePos]);
+	} else if (typePos == PRIORITY_TIME_BLOCK_TYPE) {
+	  selection.style("fill", 'url(#diagonalHatch)');  
+	}
     }
 }
 
@@ -699,29 +818,58 @@ function rectangleDraged(d) {
     var heightPos = d3.select(this).attr('height');
     var widthPos = d3.select(this).attr('width');
     var valuePos = d3.select(this).attr('value');
+    var myIDPos = d3.select(this).attr('myID');
+    var typePos = d3.select(this).attr('type');
+    
     var xPos = m[0] -(widthPos/2);
     var yPos = m[1] -(heightPos/2);
 
-    var svg = d3.select("#chart").select("svg");
+    var svg = d3.select("#chart").select("svg")
     var heatMap = d3.selectAll(".selected")
 	.remove();
 
-    var rectangleDragBehavior = d3.behavior.drag()	
+//    var movingBlock = d3.selectAll("." + myIDPos)
+//       .remove();
+
+    var rectangleDragBehavior = d3.behavior.drag()
         .origin(Object)
         .on("drag", rectangleDraged)
 	.on('dragend', rectangleDragended);
 
     svg.append("rect")
+	.attr("myID", myIDPos)
+	.attr("type", typePos)
 	.attr("x", xPos)
 	.attr("y", yPos)
 	.attr("height", heightPos)
 	.attr("width", widthPos)
 	.attr("rx", 4)
 	.attr("ry", 4)
-	.attr("class", "hour bordered")
+	.attr("class", function(d) { return "bordered moving " + myIDPos; })
 	.classed("selected", true)
 	.attr("value", valuePos)
 	.style("fill", function(d) { return dataModel.colors[valuePos]; })
+	.attr("transform", "translate(" + dataModel.margin.left  + "," + dataModel.margin.top + ")")
+        .on("click", rectangleClicked).call(rectangleDragBehavior)
+        .call(d3.behavior.zoom().on("zoom", rectangleZoom));
+
+    if (typePos != PRIORITY_TIME_BLOCK_TYPE) {
+      return;
+    }
+    
+    svg.append("rect")
+	.attr("myID", myIDPos)
+	.attr("type", typePos)
+	.attr("x", xPos)
+	.attr("y", yPos)
+	.attr("height", heightPos)
+	.attr("width", widthPos)
+	.attr("rx", 4)
+	.attr("ry", 4)
+	.attr("class", function(d) { return "bordered hatched moving " + myIDPos; })
+	.classed("selected", true)
+	.attr("value", valuePos)
+        .attr('fill', 'url(#diagonalHatch)')      
 	.attr("transform", "translate(" + dataModel.margin.left + "," + dataModel.margin.top + ")")
         .on("click", rectangleClicked).call(rectangleDragBehavior)
         .call(d3.behavior.zoom().on("zoom", rectangleZoom));
@@ -736,7 +884,9 @@ function rectangleDraged(d) {
 function rectangleDragended() {
 
     if (isMoving) {
-	d3.select(this).remove();
+        var myID = d3.select(this).attr('myID');
+	var movingBlock = d3.selectAll('.' + myID).remove();
+
 	d3.selectAll('rect').classed("selected", false);
 	isMoving = false;
     }
@@ -745,10 +895,10 @@ function rectangleDragended() {
 function rectangleZoom() {
 
   if (d3.event.sourceEvent.type=='mousewheel' || d3.event.sourceEvent.type=='DOMMouseScroll'){
-
+  
       if (d3.event.sourceEvent.wheelDelta) {  /* IE/Opera. */
 	  delta = event.wheelDelta/120;
-
+	  
       } else if (event.detail) { /** Mozilla case. */
       /** In Mozilla, sign of delta is different than in IE.
 	* Also, delta is multiple of 3.

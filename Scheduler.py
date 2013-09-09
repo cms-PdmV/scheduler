@@ -309,20 +309,20 @@ def shedule(startSchedulingDate):
 
 	for i in range(planedBlocksCount):
 	    planedBlockVaulueI = planedBlocksValues[i]['value'];
-	    idI = planedBlockVaulueI["_id"];
+#	    idI = planedBlockVaulueI["_id"];
 	    startDateI = planedBlockVaulueI["startDate"];
 	    startEventI = planedBlockVaulueI["startEvent"];
 	    eventsCountI = planedBlockVaulueI["eventsCount"];
 	    timePartCountI = planedBlockVaulueI["timePartCount"];
             priorityI = planedBlockVaulueI["priority"];
-            
-	    randomValue = str(int(priorityI) -1); #%10;
+            typeI = planedBlockVaulueI["type"];
 
 	    outputI = "{event:" + startEventI + ", ";
 	    outputI += "hour:"  + "\"" + startDateI + "\"" + ", ";
-	    outputI += "value:" + str(randomValue) +  ", ";
+	    outputI += "value:" + priorityI +  ", ";
 	    outputI += "height:" + eventsCountI + ", ";
-	    outputI += "width:" + "\"" + timePartCountI + "\"" + "}";
+	    outputI += "width:" + "\"" + timePartCountI + "\"" + ", ";
+	    outputI += "type:" + "\"" + typeI + "\"" + "}";
 
 	    if i < (planedBlocksCount -1):
 	      outputI += ",";
@@ -352,16 +352,46 @@ class Scheduler:
         deadlineBlocks = self.inputDataModel.inputDeadlineBlocks;
         priorityBlocks = self.inputDataModel.inputPriorityBlocks;
 
+	cc = 0;
         for dlBlockI in deadlineBlocks:
+	    if cc == 400:
+	      break;
+	    cc = cc +1;
 	    deadlineI = dlBlockI.deadline;
 	    indexI = self.deadlines.index(deadlineI);
 	    deadlineSpaceI = self.deadlineSpaces[indexI];
             deadlineSpaceI.insertRightBottom(dlBlockI);
 
-#	deadlineSpaceI = self.deadlineSpaces[0];
-#	for pBlockI in priorityBlocks:
-#            deadlineSpaceI.insertLeftTop(pBlockI);
+        for spaceI in self.deadlineSpaces:
+           spaceI.transformation();
 
+#	self.deadlineSpaces[0].printFreeIntervals();
+
+#	if 1 == 1:
+#	  return;
+
+	deadlineSpaceIndex = 0;
+	pBlockIndex = len(priorityBlocks) -1;
+
+	counter = 1;
+        while pBlockIndex >= 0:
+	  if counter == 59:
+	    break;
+	  pBlockI = priorityBlocks[pBlockIndex]; 
+          deadlineSpaceI = self.deadlineSpaces[deadlineSpaceIndex];
+
+	  isInserted = deadlineSpaceI.insertLeftBottom(pBlockI);
+#	  isInserted = deadlineSpaceI.insertLeftTop(pBlockI);
+#	  isInserted = deadlineSpaceI.insertRightBottom(dlBlockI);
+	  if not isInserted:
+	    deadlineSpaceIndex = deadlineSpaceIndex +1;
+	    if deadlineSpaceIndex == len(self.deadlineSpaces):
+	      break;
+	    continue;
+
+	  pBlockIndex = pBlockIndex -1;
+	  counter = counter + 1;
+	  
     def getOutputDataModel(self):
 	 deadlineBlocks = [];
 	 priorityBlocks = [];

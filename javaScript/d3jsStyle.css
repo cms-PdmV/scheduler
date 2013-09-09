@@ -1,12 +1,19 @@
 rect.bordered {
   stroke: #E6E6E6;
-  stroke-width:2px;   
+  stroke-width:2px;
+  background-image: url("https://github.com/favicon.ico");
 }
 
 text.mono {
   font-size: 9pt;
   font-family: Consolas, courier;
   fill: #aaa;
+}
+
+text.title {
+  font-size: 28pt;
+  font-family: Consolas, courier;
+  fill: #000;
 }
 
 text.axis-workweek {
@@ -16,3 +23,5 @@ text.axis-workweek {
 text.axis-worktime {
   fill: #000;
 } 
+
+
