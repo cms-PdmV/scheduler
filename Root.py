@@ -82,6 +82,14 @@ class TimeTablePage(object):
         return generator.generateTimeTable();
     index.exposed = True
 
+    def data(self):
+	if not (authentication.authorizationTimeTable()):
+           return "var data = [];";
+
+        return data();
+    data.exposed = True
+
+
 
 class Root(object):
 
@@ -94,10 +102,6 @@ class Root(object):
     def __init__(self):
       generator = HTMLPagesGenerator();
       generator.generate();
-
-    def redirect(self):
-	raise cherrypy.HTTPRedirect("../../www.seznam.cz");
-    redirect.exposed = True
 
     def index(self):
         return self.welcome.index();

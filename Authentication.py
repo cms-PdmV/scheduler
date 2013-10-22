@@ -1,6 +1,7 @@
+# Authentication and Authorization to access area
 class Authentication(object):
     ANONYM = "anonym";
-  
+
     def __init__(self):
       self.USER_NAME = self.ANONYM;
       

@@ -18,9 +18,11 @@ import Config
 from Config import *
 
 
+# Function removes " chars from input string
 def remQuotation(stringVal):
     return stringVal.replace("\"", "");
 
+# Abstract class represents model of InputBlock for Scheduler
 class SchedulerInputBlockModel(object):
 
     def __init__(self, valuesString):
@@ -60,6 +62,7 @@ class SchedulerInputBlockModel(object):
 	    minutes=minutesValue);
 
 
+# Class represents model of InputDeadlineBlocks for SchedulerInputBlockModel
 class SchedulerInputDeadlineBlockModel(SchedulerInputBlockModel):
   
     def __init__(self, valuesString):
@@ -73,10 +76,8 @@ class SchedulerInputDeadlineBlockModel(SchedulerInputBlockModel):
        priorityStr = remQuotation(priorityJson);
        self.priority = int(priorityStr);
 
-    def output(self):
-	print self.autor;
 
-
+# Class represents model of InputPriorityBlocks for SchedulerInputBlockModel
 class SchedulerInputPriorityBlockModel(SchedulerInputBlockModel):
 
     def __init__(self, valuesString):
@@ -86,10 +87,8 @@ class SchedulerInputPriorityBlockModel(SchedulerInputBlockModel):
        priorityStr = remQuotation(priorityJson);
        self.priority = int(priorityStr);
 
-    def output(self):
-	print self.autor;
 
-
+# Class represents model of planned blocks
 class SchedulerInputDataModel:
 
     def __init__(self):
@@ -119,7 +118,7 @@ class SchedulerInputDataModel:
 	  deadlineBlockStringI = deadlineBlocksRowsValues[i]['value'];
           deadlineBlockI = SchedulerInputDeadlineBlockModel(
 	      deadlineBlockStringI);
-	  
+
 	  self.inputDeadlineBlocks.append(deadlineBlockI);
 
 
@@ -145,7 +144,7 @@ class SchedulerInputDataModel:
 
 	deadlinesDuplicateStr = deadlineBlockDeadlines;
 	deadlinesStr = list(set(deadlinesDuplicateStr));
-	
+
 	deadlines = [];
 	for deadlineI in deadlinesStr:
 	    deadlines.append(deadlineI);
@@ -161,6 +160,7 @@ class SchedulerInputDataModel:
 	  blockI.output();
 
 
+# Abstract class represents model of OutputBlock for Scheduler
 class SchedulerOutputBlockModel(object):
 
     def __init__(self, inputBlock):
@@ -174,7 +174,7 @@ class SchedulerOutputBlockModel(object):
 
        self.startDate = "";
        self.startEvent = "";
- 
+
     def headerOfJson(self):
 
        timePartCount = self.timedeltaToString(self.timePartCount);
@@ -196,7 +196,6 @@ class SchedulerOutputBlockModel(object):
 	  }
 	  """;
 
-
     def timedeltaToString(self, timedelta):
        days = timedelta.days;
        hours = timedelta.seconds/60/60;
@@ -208,6 +207,7 @@ class SchedulerOutputBlockModel(object):
        return res;
        
 
+# Class represents model of OutputDeadlineBlocks for SchedulerOutputBlockModel 
 class SchedulerOutputDeadlineBlockModel(SchedulerOutputBlockModel):
 
     def __init__(self, inputDeadlineBlock):
@@ -216,7 +216,7 @@ class SchedulerOutputDeadlineBlockModel(SchedulerOutputBlockModel):
        
        self.deadline = inputDeadlineBlock.deadline;
        self.priority = inputDeadlineBlock.priority;
-       self.typeDoc = "planedDeadlineBlock";
+       self.typeDoc = PLANDED_DEADLINE_TIME_BLOCKS_TYPE;
 
     def getJson(self):
        return self.headerOfJson() + """
@@ -225,12 +225,14 @@ class SchedulerOutputDeadlineBlockModel(SchedulerOutputBlockModel):
 		  \"type\":\"""" + self.typeDoc + """\" """ + """
 	    """ + self.footerOfJson();
 
+    # writes OutputDeadlineBlocks to database
     def writeInDatabase(self):
 	doc = self.getJson();
 	database = Couch(SERVERDB_NAME, SERVERDB_PORT);
 	database.saveDoc(DATABASE_NAME, doc);
 
 
+# Class represents model of OutputPriorityBlocks for SchedulerOutputBlockModel 
 class SchedulerOutputPriorityBlockModel(SchedulerOutputBlockModel):
 
     def __init__(self, inputPriorityBlock):
@@ -238,7 +240,7 @@ class SchedulerOutputPriorityBlockModel(SchedulerOutputBlockModel):
 	  inputPriorityBlock)
 
        self.priority = inputPriorityBlock.priority;
-       self.typeDoc = "planedPriorityBlock";
+       self.typeDoc = PLANDED_PRIORITY_TIME_BLOCKS_TYPE;
 
     def getJson(self):
        return self.headerOfJson() + """
@@ -246,25 +248,29 @@ class SchedulerOutputPriorityBlockModel(SchedulerOutputBlockModel):
 		  \"type\":\"""" + self.typeDoc + """\" """ + """
 	    """ + self.footerOfJson();
 
+    # writes OutputPriorityBlocks to database
     def writeInDatabase(self):
 	doc = self.getJson();
 	database = Couch(SERVERDB_NAME, SERVERDB_PORT);
 	database.saveDoc(DATABASE_NAME, doc);
 
 
+# Class represents model of OutputBlock for Scheduler
 class SchedulerOutputDataModel:
     def __init__(self, outputDeadlineBlocks, outputPriorityBlocks):
        self.outputDeadlineBlocks = outputDeadlineBlocks;
        self.outputPriorityBlocks = outputPriorityBlocks;
 
+    # write planned tasks to database
     def writeInDatabase(self):
+
        for deadlineBlockI in self.outputDeadlineBlocks:
 	   deadlineBlockI.writeInDatabase();
 
        for priorityBlockI in self.outputPriorityBlocks:
 	   priorityBlockI.writeInDatabase();
 
-
+    # remove planned tasks from database
     def removeRecordsInDatabase(self):
         database = Couch(SERVERDB_NAME, SERVERDB_PORT);
 
@@ -283,7 +289,8 @@ class SchedulerOutputDataModel:
 	  database.deleteDoc(DATABASE_NAME, planedBlockIdPlusRev);
 
 
-# public function to start sheduler
+# Public global function
+# This function starts sheduler
 def shedule(startSchedulingDate):
 
 	inputDataModel = SchedulerInputDataModel();
@@ -295,6 +302,9 @@ def shedule(startSchedulingDate):
 	outputModel.removeRecordsInDatabase();
 	outputModel.writeInDatabase();
 
+# Public global function
+# This function returns data
+def data():
         database = Couch(SERVERDB_NAME, SERVERDB_PORT);
         planedBlocksStr = database.openDoc(DATABASE_NAME,
 	    LINK_PLANDED_TIME_BLOCKS);
@@ -303,13 +313,12 @@ def shedule(startSchedulingDate):
 	planedBlocksCount = planedBlocks['total_rows'];
 	planedBlocksValues = planedBlocks['rows'];
 
-	outputFile = open(SCHEDULER_OUTPUT_FILEJS, 'w');
-	
-	outputFile.write("var data = [\n");
-
+#	outputFile = open(SCHEDULER_OUTPUT_FILEJS, 'w');
+#	outputFile.write("var data = [\n");
+        output = "var data = [\n";
+   
 	for i in range(planedBlocksCount):
 	    planedBlockVaulueI = planedBlocksValues[i]['value'];
-#	    idI = planedBlockVaulueI["_id"];
 	    startDateI = planedBlockVaulueI["startDate"];
 	    startEventI = planedBlockVaulueI["startEvent"];
 	    eventsCountI = planedBlockVaulueI["eventsCount"];
@@ -327,11 +336,14 @@ def shedule(startSchedulingDate):
 	    if i < (planedBlocksCount -1):
 	      outputI += ",";
     
-	    outputFile.write(outputI + "\n");
-	outputFile.write("];");
+#	    outputFile.write(outputI + "\n");
+            output += outputI + "\n";
+#	outputFile.write("];");
+	return output + "];";
 
+# Class represents Scheduler for planning tasks
 class Scheduler:
-  
+
     def __init__(self, inputDataModel, startSchedulingDate, eventsNumber):
 	self.inputDataModel = inputDataModel;
 	self.startSchedulingDate = startSchedulingDate;
@@ -347,16 +359,12 @@ class Scheduler:
             spaceI = TimeSpace(start, end, eventsNumber);
             self.deadlineSpaces.append(spaceI);
 
-
+    # start planning tasks
     def go(self):
         deadlineBlocks = self.inputDataModel.inputDeadlineBlocks;
         priorityBlocks = self.inputDataModel.inputPriorityBlocks;
 
-	cc = 0;
         for dlBlockI in deadlineBlocks:
-	    if cc == 400:
-	      break;
-	    cc = cc +1;
 	    deadlineI = dlBlockI.deadline;
 	    indexI = self.deadlines.index(deadlineI);
 	    deadlineSpaceI = self.deadlineSpaces[indexI];
@@ -365,24 +373,14 @@ class Scheduler:
         for spaceI in self.deadlineSpaces:
            spaceI.transformation();
 
-#	self.deadlineSpaces[0].printFreeIntervals();
-
-#	if 1 == 1:
-#	  return;
-
 	deadlineSpaceIndex = 0;
 	pBlockIndex = len(priorityBlocks) -1;
 
-	counter = 1;
         while pBlockIndex >= 0:
-	  if counter == 59:
-	    break;
 	  pBlockI = priorityBlocks[pBlockIndex]; 
           deadlineSpaceI = self.deadlineSpaces[deadlineSpaceIndex];
 
 	  isInserted = deadlineSpaceI.insertLeftBottom(pBlockI);
-#	  isInserted = deadlineSpaceI.insertLeftTop(pBlockI);
-#	  isInserted = deadlineSpaceI.insertRightBottom(dlBlockI);
 	  if not isInserted:
 	    deadlineSpaceIndex = deadlineSpaceIndex +1;
 	    if deadlineSpaceIndex == len(self.deadlineSpaces):
@@ -390,12 +388,12 @@ class Scheduler:
 	    continue;
 
 	  pBlockIndex = pBlockIndex -1;
-	  counter = counter + 1;
-	  
+
+    # returns timetable Datamodel
     def getOutputDataModel(self):
 	 deadlineBlocks = [];
 	 priorityBlocks = [];
-	 
+
 	 for spaceI in self.deadlineSpaces:
 	    for blockI in spaceI.getDeadlineIntervals():
 
@@ -404,7 +402,7 @@ class Scheduler:
 		outputBlockI = SchedulerOutputDeadlineBlockModel(inputBlockI);
 		outputBlockI.startDate = blockI.startX() + spaceI.startDate;
 		outputBlockI.startEvent = blockI.startY();
-		
+
 		deadlineBlocks.append(outputBlockI);
 
 	 for spaceI in self.deadlineSpaces:
@@ -415,8 +413,9 @@ class Scheduler:
 		outputBlockI = SchedulerOutputPriorityBlockModel(inputBlockI);
 		outputBlockI.startDate = blockI.startX() + spaceI.startDate;
 		outputBlockI.startEvent = blockI.startY();
-		
+
 		priorityBlocks.append(outputBlockI);
 
 	 outputModel = SchedulerOutputDataModel(deadlineBlocks, priorityBlocks);
 	 return outputModel;
+

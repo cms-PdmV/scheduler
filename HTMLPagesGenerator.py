@@ -151,9 +151,9 @@ class HTMLTimeTablePageGenerator(object):
       outputFile += header;
 
       scriptLink  =  '        <br>' +'\n';
-      scriptLink +=  '        <h1 align="center">CMS planning system</h1>' +'\n';
       scriptLink +=  '        <div id="chart" align="center"></div>' +'\n';
-      scriptLink +=  '        <script type="text/javascript" src="../javaScript/d3jsTimeTableData.js"></script>' +'\n';
+      scriptLink +=  '        <script type="text/javascript" src="data"></script>' +'\n';
+#      scriptLink +=  '        <script type="text/javascript" src="../javaScript/d3jsTimeTableData.js"></script>' +'\n';
       scriptLink +=  '        <script src="../javaScript/d3jsTimeTable.js"></script>' +'\n';
       outputFile += scriptLink + '\n';
 

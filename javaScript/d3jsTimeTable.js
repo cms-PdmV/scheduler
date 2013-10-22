@@ -1,6 +1,7 @@
 
+// DateDifferenceClass represents date difference
 var DateDifferenceClass = function(dateDifferenceString) {
-
+  // function parse string to this instance of DateDifferenceClass
   this.parse = function(dateDifferenceString) {
 
       var dayStartIndex =
@@ -31,6 +32,7 @@ var DateDifferenceClass = function(dateDifferenceString) {
 	  dateDifferenceString.substring(secondStartIndex, secondEndIndex);
   };
 
+  // function is doing plus date difference
   this.plusDifference = function(dateDifferenceToPlus) {
  
       var dateDiff = dateDifferenceToPlus;
@@ -47,6 +49,7 @@ var DateDifferenceClass = function(dateDifferenceString) {
       return new DateDifferenceClass(dateString);
   };
 
+  // function is doing minus this date difference
   this.minusDifference = function(dateDifferenceToMinus) {
 
       var dateDiff = dateDifferenceToMinus;
@@ -63,6 +66,7 @@ var DateDifferenceClass = function(dateDifferenceString) {
       return new DateDifferenceClass(dateString);
   };
 
+  // function is doing divide this date by date difference
   this.divideDifference = function(intToDivision) {
       var secondsAll = this.getSeconds(this.days, this.hours,
 				       this.minutes, this.seconds);
@@ -72,6 +76,7 @@ var DateDifferenceClass = function(dateDifferenceString) {
       return new DateDifferenceClass(dateString);
   };
 
+  // function returns secounds
   this.getSeconds = function(days, hours, minutes, seconds) {
  
     var seconds = 60*60*24*parseInt(days) + 60*60*parseInt(hours) +
@@ -87,7 +92,8 @@ var DateDifferenceClass = function(dateDifferenceString) {
 
     return resultString;
   };
-  
+
+  // function returns string from seconds-value  
   this.secondsToString = function(secondsAll) {
 
       var daysR = Math.floor(secondsAll/60/60/24);    
@@ -115,7 +121,7 @@ var DateDifferenceClass = function(dateDifferenceString) {
 
 
 
-
+// DateClass represents date
 var DateClass = function(dateString) {
 
     this.stringToDate  = function(dateString) {
@@ -161,6 +167,7 @@ var DateClass = function(dateString) {
     };
     
 
+    // function returns DateDifferenceClass between dateMinuend, dateSubtrahend
     this.getDifference = function(dateMinuend, dateSubtrahend) {
 
       var dateM = dateMinuend.date;
@@ -187,10 +194,12 @@ var DateClass = function(dateString) {
       return new DateDifferenceClass(dateDifferenceString);
    };
 
+   // function returns the difference of DateDifferenceClass
    this.minusDate = function(dateSubtrahend) {
       return this.getDifference(this, dateSubtrahend);
     };
 
+   // function returns the date as the sum of this instance with given DateDifference
    this.plusDifference = function(dateDifference) {
       
       var daysPlus = dateDifference.days;
@@ -216,6 +225,7 @@ var DateClass = function(dateString) {
       return dateResult;
    };
 
+   // function returns the date as the difference of this instance with given DateDifference
    this.minusDifference = function(dateDifference) {
 
       var daysMinus = dateDifference.days;
@@ -241,13 +251,15 @@ var DateClass = function(dateString) {
       return dateResult;
    };
 
+   // function compares the dates
    this.isGreaterThanOrEqual = function(date) {
         if (this.date.getTime() >= date.date.getTime()) {
 	  return true;
         }
         return false;
    };
-   
+
+   // function compares the dates   
    this.isLessThanOrEqual = function(date) {
         if (this.date.getTime() <= date.date.getTime()) {
 	  return true;
@@ -341,12 +353,12 @@ var SchedulerDataModelClass = function() {
 	  startDateI = new DateClass(dateHour);
 	  diffDateI = new DateDifferenceClass(dateWidth);
 	  endDateI = startDateI.plusDifference(diffDateI);
-  
+
 	  isStartDateOK1 = this.startDate.isLessThanOrEqual(endDateI);
 	  isStartDateOK2 = this.endDate.isGreaterThanOrEqual(endDateI);
 	  isEndDateOK1 = this.startDate.isLessThanOrEqual(startDateI);
 	  isEndDateOK2 = this.endDate.isGreaterThanOrEqual(startDateI);
-	  
+
 	  isEndDateOK = isEndDateOK1 || isEndDateOK2;
 	  isStartDateOK = isStartDateOK1 || isStartDateOK2;
 
@@ -354,13 +366,13 @@ var SchedulerDataModelClass = function() {
 	  isEndEventOK2 = this.endEvent >= numEvent + numHeight;
 	  isStartEventOK1 = this.startEvent <= numEvent;
 	  isStartEventOK2 = this.endEvent >= numEvent;
-	  	
+
 	  isEndEventOK = isEndEventOK1 || isEndEventOK2;
 	  isStartEventOK = isStartEventOK1 || isStartEventOK2;
-	  
+
 	  isPositionXOfBlockRight = isStartDateOK && isEndDateOK;
 	  isPositionYOfBlockRight = isStartEventOK && isEndEventOK;
-	  
+
 	  if (isPositionXOfBlockRight && isPositionYOfBlockRight) {
 	    
 	      if (this.startEvent >= numEvent) {
@@ -371,7 +383,7 @@ var SchedulerDataModelClass = function() {
 	      if (this.endEvent <= numEvent + numHeight) {
    	         timeBlockI["height"] = this.endEvent -numEvent;
 	      }
-	      
+
 	      if (this.startDate.isGreaterThanOrEqual(startDateI)) {
    	         timeBlockI["hour"] = this.startDate.toString();
 
@@ -379,7 +391,7 @@ var SchedulerDataModelClass = function() {
 	         var newWidth = diffDateI.minusDifference(diffToMinus);
 		 timeBlockI["width"] = newWidth.toString();
 	      }
-	      
+
 	      if (this.endDate.isLessThanOrEqual(endDateI)) {
 		 var diffToMinus = endDateI.minusDate(this.endDate);
 	         var newWidth = diffDateI.minusDifference(diffToMinus);
@@ -393,12 +405,13 @@ var SchedulerDataModelClass = function() {
 		  this.planedDeadlineBlocks.push(timeBlockI);
 	      } else { alert("Error:Bad input from database."); }
 	      this.planedBlocks.push(timeBlockI);
-	      
+
 	  }
        }
 
     }
 
+    // Function returns size in pixels from differentDate
     this.getRecountedDifferentDate = function(differentDate) {
       var diffDate = this.endDate.minusDate(this.startDate);
       var diffSecond = diffDate.getSecondsSum();
@@ -409,6 +422,7 @@ var SchedulerDataModelClass = function() {
       return result;
     }
 
+    // Function returns size in pixels from differentEvent
     this.getRecountedDifferentEvent = function(differentEvent) {
       var diffEvent = this.endEvent -this.startEvent;
       
@@ -417,7 +431,8 @@ var SchedulerDataModelClass = function() {
       var result = differentEvent * pixelsTakeOneEvent;
       return result;
     }
-    
+
+    // Function returns X position in pixels from dateTimeX
     this.getRecountedX = function(dateTimeX) {
       var diffDate = this.endDate.minusDate(this.startDate);
       var diffSecond = diffDate.getSecondsSum();
@@ -428,6 +443,8 @@ var SchedulerDataModelClass = function() {
       var result = countedDiffDate.getSecondsSum() * pixelsTakeOneSecond;
       return result;
     }
+
+    // Function returns Y position in pixels from numEventsY
     this.getRecountedY = function(numEventsY) {
       var diffEvent = this.endEvent -this.startEvent;
 
@@ -437,58 +454,82 @@ var SchedulerDataModelClass = function() {
       return result;
     }
 
+    // Function returns Events LabelX
     this.getEventLabelX = function(numberOfLabel) {
       return 0;
     }
+
+    // Function returns Events LabelY
     this.getEventLabelY = function(numberOfLabel) {
       var labelHeight = this.height / this.eventLabelsCount;
       return numberOfLabel * labelHeight;
     }
 
+    // Function returns Dates LabelX
     this.getDateLabelX = function(numberOfLabel) {
       var labelWidth = this.width / this.dateLabelsCount;
       return numberOfLabel * labelWidth +0.65*this.margin.left;
     }
+
+    // Function returns Dates LabelY
     this.getDateLabelY = function(numberOfLabel) {
       return -30;
     }
 
+    // Function returns X pixels position of TimeBlock 
     this.getTimeBlockX = function(d) {
       var date = new DateClass(d.hour);
       return this.getRecountedX(date);
     }
+
+    // Function returns X pixels position of TimeBlock
     this.getTimeBlockY = function(d) {
       return this.getRecountedY(d.event);
     }
-    
+
+    // Function returns width pixels of TimeBlock
     this.getTimeBlockWidth = function(d) {
       var diffDate = new DateDifferenceClass(d.width);
       return this.getRecountedDifferentDate(diffDate);
-    }    
+    }
+
+    // Function returns height pixels of TimeBlock
     this.getTimeBlockHeight = function(d) {
       return this.getRecountedDifferentEvent(d.height);
     }
-    
+
+    // Function returns type of TimeBlock
     this.getTimeBlockType = function(d) {
       return d.type;
     }
+
+    // Function returns True if the type of TimeBlock is PriorityTimeBlock
     this.isPriorityTimeBlock = function(d) {
         return d.type == PRIORITY_TIME_BLOCK_TYPE;
     }
 
+    // Function returns X-positin in pixels of Element
     this.getLegendElementX = function(numberOfElement) {
       return this.getLegendElementWidth() * numberOfElement;
     }
+
+    // Function returns Y-positin in pixels of Element
     this.getLegendElementY = function(numberOfElement) {
       return dataModel.height;
     }
+
+    // Function returns width in pixels of Element
     this.getLegendElementWidth = function() {
       return this.width / 12;
     }
+
+    // Function returns height in pixels of Element
     this.getLegendElementHeight = function() {
       return this.width / 48;
     }
     
+    // Function create set of background rectangles
+    // Why? You need something to recognize click on background
     this.getBacgroundRectangles = function() {
       
       var diffDate = this.endDate.minusDate(this.startDate);
@@ -518,7 +559,8 @@ var SchedulerDataModelClass = function() {
 
       return jsonObj;
     }
-    
+
+    // Function zoom in timetable
     this.zoomIn = function(dateToZoom, eventToZoom) {
       var diffDate = this.endDate.minusDate(this.startDate);
       var partDate = diffDate.divideDifference(300);
@@ -535,6 +577,8 @@ var SchedulerDataModelClass = function() {
       
       this.recount();
     }
+
+    // Function zoom out timetable
     this.zoomOut = function(dateToZoom, eventToZoom) {
       var diffDate = this.endDate.minusDate(this.startDate);
       var partDate = diffDate.divideDifference(300);
@@ -552,6 +596,7 @@ var SchedulerDataModelClass = function() {
       this.recount();
     }
 
+    // Function move right timetable
     this.moveRight = function() {
       var diffDate = this.endDate.minusDate(this.startDate);
       var partDate = diffDate.divideDifference(300);
@@ -562,7 +607,8 @@ var SchedulerDataModelClass = function() {
       this.startDate = newStartDate;
       this.endDate = newEndDate;
     }
-    
+
+    // Function move left timetable
     this.moveLeft = function() {
       var diffDate = this.endDate.minusDate(this.startDate);
       var partDate = diffDate.divideDifference(300);
@@ -575,11 +621,13 @@ var SchedulerDataModelClass = function() {
       
     }
 
+    // Function move down timetable
     this.moveDown = function() {
       this.startEvent -= 5;
       this.endEvent -= 5;
     }
-    
+
+    // Function move up timetable    
     this.moveUp = function() {
       this.startEvent += 5;
       this.endEvent += 5;
@@ -587,6 +635,7 @@ var SchedulerDataModelClass = function() {
 
 };
 
+// function create blockID
 function createBlockId(event, hour, isDeadlineBlock) {
   
   var eventHour = event + "-" + hour;
@@ -602,6 +651,7 @@ function createBlockId(event, hour, isDeadlineBlock) {
 };
 
 
+// function draws timetable to canvas
 function drawTimeTable() {
   var colorScale = d3.scale.quantile()
       .domain([0, d3.max(dataModel.planedBlocks, function (d) { return d.value; })])
@@ -780,6 +830,7 @@ function drawTimeTable() {
 }
 
 
+// Function handler - Click
 var isSelected = false;
 function rectangleClicked(dIn) {
 
@@ -809,6 +860,7 @@ function rectangleClicked(dIn) {
 }
 
 
+// Function handler - Dragging
 var isMoving = false;
 function rectangleDraged(d) {
     
@@ -880,7 +932,7 @@ function rectangleDraged(d) {
 
 }
 
-
+// Function handler - rectangle was dragged
 function rectangleDragended() {
 
     if (isMoving) {
@@ -892,6 +944,7 @@ function rectangleDragended() {
     }
 }
 
+// Function handler - zoom timetable
 function rectangleZoom() {
 
   if (d3.event.sourceEvent.type=='mousewheel' || d3.event.sourceEvent.type=='DOMMouseScroll'){
@@ -960,13 +1013,15 @@ function backgroundDragended() {
       drawTimeTable();
 }
 
+
+// Click handler - background
 function backgroundClicked(dIn) {
 //    alert("backgroundClicked()");
 }
 
 
 
-
+// Point to Run Javascript
 var dataModel = new SchedulerDataModelClass();
 dataModel.initialization();
 drawTimeTable();
