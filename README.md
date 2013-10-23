@@ -5,7 +5,11 @@ CMS PdmV cheduler service
 
 How to run service:
 
-1) Run database
+1) Download the source code
+ a) source code stored on GitHub
+    https://github.com/cms-PdmV/cheduler
+
+2) Run database
  a) Run couchDB (install)
     bash $ couchDB
 
@@ -18,7 +22,7 @@ How to run service:
     http://127.0.0.1:5984/_utils/ ->  View -> Temporaty wiev.. ->
     -> copy Map, Reduce function from file -> save
 
-1) Run Web server
+3) Run Web server
  a) Modife Config.py
 
  b) Run cherrypy (install)
