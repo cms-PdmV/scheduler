@@ -1,0 +1,35 @@
+#!/usr/bin/python
+import cherrypy
+import sys
+
+from Scheduler import *
+
+class Root(object):
+
+    def index(self, **parameters):
+
+        if parameters:
+            self.runCalculations(parameters)
+
+        return open(os.path.join('', 'html', 'index.html'))
+    index.exposed = True
+
+    def data(self):
+        return data()
+    data.exposed = True
+
+    def runCalculations(self, parameters=None):
+        startDateFormat = "%Y-%m-%d %H:%M:%S";
+        currentdate = datetime.now().strftime(startDateFormat)
+        startSchedulingDate = datetime.strptime(currentdate, startDateFormat);
+        shedule(startSchedulingDate, parameters);
+
+    def force(self):
+        translate = Translator()
+        self.runCalculations()
+        return open(os.path.join('', 'html', 'index.html'))
+    force.exposed = True
+
+a
+if __name__ == '__main__':
+    cherrypy.quickstart(Root(), '/', 'TimeTable.conf')

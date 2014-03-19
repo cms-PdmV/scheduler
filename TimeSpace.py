@@ -101,15 +101,15 @@ class Interval:
 		endX <= neighborI.endX());
 
             if (startXBetween or endXBetween or blockAround):
-                neighborsBetween.append(neighborI);        
-        
+                neighborsBetween.append(neighborI);
+
         return neighborsBetween;
 
     # Private function
     # Returns vertical neighbors between startY, endY
     def getVerticalNeighborsBetween(self, startY, endY, neighbors):
         neighborsBetween = [];
-        
+
         for neighborI in neighbors:
             startYBetween = (startY < neighborI.startY() and
 		neighborI.startY() < endY);
@@ -119,16 +119,16 @@ class Interval:
 		endY <= neighborI.endY());
 
             if (startYBetween or endYBetween or blockAround):
-                neighborsBetween.append(neighborI);        
-        
+                neighborsBetween.append(neighborI);
+
         return neighborsBetween;
 
     # Public function
-    # Divides horizontal interval by y coordinates 
+    # Divides horizontal interval by y coordinates
     def divideHorizontal(self, y, insertType):
         if not self.isFree:
 	  print "Error - Program tried divide full block horizontaly.";
-      
+
         isBetween = self.startY() < y and y < self.endY();
         if not isBetween:
 	    print "Error - Horizontal division outside given area";
@@ -165,10 +165,10 @@ class Interval:
         newBottom.insertNewIntervalAfterOldIntervalAtNeighbors(newBottom,
 	    self);
         self.removeIntervalAtNeighbors(self);
-        
+
         index = self.space.freeIntervals.index(self);
         self.space.freeIntervals.remove(self);
-        
+
 	if (insertType == INSERT_TYPE_RB):
 	  self.space.freeIntervals.insert(index, newBottom);
 	  self.space.freeIntervals.insert(index +1, newTop);
@@ -186,7 +186,7 @@ class Interval:
         if not self.isFree:
 	    print "Error - Program tried divide full block verticaly.";
 
-        isBetween = self.startX() < x and x < self.endX();
+        isBetween = self.startX() <= x and x <= self.endX();
         if not isBetween:
 	    print "Error - Vertical division outside given area";
 	    print " self.startX():" + str(self.startX());
@@ -225,7 +225,7 @@ class Interval:
 	self.insertSortLedtPart(newLeft, newRight, insertType);
 
         return [newLeft, newRight];
-        
+
     # Private function
     def insertSortLedtPart(self, newLeft, newRight, insertType):
 
@@ -268,7 +268,7 @@ class Interval:
 
 	else:
 	   print "Error - Undefined insertType";
-	    
+
 	if (insertType == INSERT_TYPE_RB):
 	  self.space.freeIntervals.insert(indexF, newLeft);
 	elif (insertType == INSERT_TYPE_LB):
@@ -331,7 +331,7 @@ class Interval:
     # Private function
     # Join self with interval
     def join(self, interval):
-        
+
         if (interval == None):
             return self;
 
@@ -346,7 +346,7 @@ class Interval:
         for intervalI in self.topNeighbors:
             if intervalI == interval:
                 return self.joinWithTopNeighbor(interval);
-                
+
         for intervalI in self.downNeighbors:
             if intervalI == interval:
                 return interval.joinWithTopNeighbor(self);
@@ -370,7 +370,7 @@ class Interval:
         self.width += interval.width;
         self.startXposition = interval.startXposition;
         self.startYposition = interval.startYposition;
-        
+
         interval.insertNewIntervalAfterOldIntervalAtNeighbors(self, interval);
         interval.removeIntervalAtNeighbors(interval);
         self.space.freeIntervals.remove(interval);
@@ -400,7 +400,7 @@ class Interval:
         interval.removeIntervalAtNeighbors(interval);
         self.space.freeIntervals.remove(interval);
 
-        self.topNeighbors = interval.topNeighbors;        
+        self.topNeighbors = interval.topNeighbors;
         self.addRelationshipsOfNeighbors(self.leftNeighbors,
 	    interval.leftNeighbors);
         self.addRelationshipsOfNeighbors(self.rightNeighbors,
@@ -414,9 +414,9 @@ class Interval:
         for neighborIndex in range(len(neighborsToAdd)):
             if neighborIndex == 0:
                 last = neighbors[len(neighbors) -1]
-                first = neighborsToAdd[0];                
+                first = neighborsToAdd[0];
                 if last == first:
-                    continue;                    
+                    continue;
             neighborI = neighborsToAdd[neighborIndex];
             neighbors.append(neighborI);
 
@@ -548,7 +548,7 @@ class Interval:
 	  lastIndex = len(vNeighbors) -1;
 	  neighborS = vNeighbors[firstIndex +index];
 	  neighborE = vNeighbors[lastIndex -index];
-	    
+
 	  if (insertType == INSERT_TYPE_LT or insertType == INSERT_TYPE_LB):
 	    if (neighborS.startX() <= x) and (x < neighborS.endX()):
 	      return neighborS;
@@ -565,9 +565,8 @@ class Interval:
 	return None;
 
     # Private function
-    # Test of free place in timetable to insert 
+    # Test of free place in timetable to insert
     def couldBeInserted(self, width, height, x, y, insertType):
-
 	if (not self.isFree):
 	  return False;
 
@@ -602,7 +601,7 @@ class Interval:
 	if (widthSpace < width) and (heightSpace >= height):
             widthLeftIns = width -widthSpace;
             hightLeftIns = height;
-	      
+
 	    hNeighbor = self.getHorizontalNeighbor(y, insertType);
 	    if (hNeighbor == None):
 	      return False;
@@ -611,7 +610,6 @@ class Interval:
             return hNeighbor.couldBeInserted(widthLeftIns,
                 hightLeftIns, xNew, y, insertType);
 
-
 	if (widthSpace >= width) and (heightSpace < height):
             widthTopIns = width;
             hightTopIns = height -heightSpace;
@@ -619,18 +617,17 @@ class Interval:
 	    vNeighbor = self.getVerticalNeighbor(x, insertType);
 	    if (vNeighbor == None):
 	      return False;
-	      
 	    yNew = self.getNewY(insertType);
             return vNeighbor.couldBeInserted(widthTopIns,
                 hightTopIns, x, yNew, insertType);
-	    
+
 	return False;
 
 
     # Private function
     # Insert task into bigger interval
     def insertingSmaller(self, width, height, x, y, insertType):
-        
+
 	widthSpace = self.getWidthSpace(x, y, insertType);
 	heightSpace = self.getHeightSpace(x, y, insertType);
 
@@ -670,7 +667,7 @@ class Interval:
             btInterval = interval.divideHorizontal(planedTopY, insertType);
             interval = btInterval[DIVIDED_BOTTOM_INDEX];
 
-        if not (planedDownY == interval.startY()):            
+        if not (planedDownY == interval.startY()):
             btInterval = interval.divideHorizontal(planedDownY, insertType);
             interval = btInterval[DIVIDED_TOP_INDEX];
 
@@ -680,10 +677,10 @@ class Interval:
     # Private function
     # Insert task at x, y which have to be inside in this interval
     def inserting(self, width, height, x, y, insertType):
-	
+
 	widthSpace = self.getWidthSpace(x, y, insertType);
 	heightSpace = self.getHeightSpace(x, y, insertType);
-  
+
         if (widthSpace >= width and heightSpace >= height):
           return self.insertingSmaller(width, height, x, y, insertType);
 
@@ -744,14 +741,14 @@ class Interval:
     # Public function
     # Insert one dataObject into Right Bottom corner
     def insertRightBottom(self, width, height, dataObject):
-	
+
         couldBeInserted = self.couldBeInserted(width, height, self.endX(),
 	    self.startY(), INSERT_TYPE_RB);
         if not couldBeInserted :
             return None;
 
         inserted = self.inserting(width, height, self.endX(), self.startY(),
-	    INSERT_TYPE_RB);        
+	    INSERT_TYPE_RB);
         if (inserted == None):
 	    print "Error - InsertRightBottom";
             return None;
@@ -769,14 +766,14 @@ class Interval:
     # Public function
     # Insert one dataObject into Left Top corner
     def insertLeftTop(self, width, height, dataObject):
-        
+
         couldBeInserted = self.couldBeInserted(width, height, self.startX(),
 	    self.endY(), INSERT_TYPE_LT);
         if not couldBeInserted :
             return None;
 
         inserted = self.inserting(width, height, self.startX(), self.endY(),
-	    INSERT_TYPE_LT);        
+	    INSERT_TYPE_LT);
         if (inserted == None):
 	    print "Error - InsertLeftTop";
             return None;
@@ -788,7 +785,7 @@ class Interval:
         self.space.addedPriorityIntervals.append(inserted);
         inserted.isFree = False;
         inserted.dataObject = dataObject;
-        
+
         return inserted;
 
 
@@ -801,7 +798,7 @@ class Interval:
             return None;
 
         inserted = self.inserting(width, height, self.startX(), self.startY(),
-	    INSERT_TYPE_LB);        
+	    INSERT_TYPE_LB);
         if (inserted == None):
 	    print "Error - InsertLeftBottom";
             return None;
@@ -812,7 +809,7 @@ class Interval:
         self.space.addedPriorityIntervals.append(inserted);
         inserted.isFree = False;
         inserted.dataObject = dataObject;
-        
+
         return inserted;
 
     # Public function
@@ -902,7 +899,7 @@ class Space:
 	      smallest = freeIntervalI;
 	  freeIntervalsSorted.append(smallest);
 	  self.freeIntervals.remove(smallest);
-  
+
 	self.freeIntervals = freeIntervalsSorted;
 
 
@@ -911,7 +908,7 @@ class Space:
     def test(self):
       if not DEBUG_MODE:
 	return;
-	
+
       print "TEST";
       for freeIntervalI in self.freeIntervals:
 	for leftNeighborI in freeIntervalI.leftNeighbors:
@@ -972,7 +969,7 @@ class TimeSpace:
     def insertRightBottom(self, inputDeadlineBlockModel):
         eventsCount = inputDeadlineBlockModel.eventsCount;
         timePartCount = inputDeadlineBlockModel.timePartCount;
-        
+
         return self.space.insertRightBottom(timePartCount, eventsCount,
 	    inputDeadlineBlockModel);
 
@@ -981,7 +978,7 @@ class TimeSpace:
     def insertLeftTop(self, inputPriorityBlockModel):
         eventsCount = inputPriorityBlockModel.eventsCount;
         timePartCount = inputPriorityBlockModel.timePartCount;
-        
+
         return self.space.insertLeftTop(timePartCount, eventsCount,
 	    inputPriorityBlockModel);
 
