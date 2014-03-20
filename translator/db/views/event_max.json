@@ -1,0 +1,20 @@
+{
+   "_id": "_design/event_max",
+   "language": "javascript",
+   "views": {
+       "eventMaxAll": {
+           "map": "function(doc) {\n
+              if (doc.type == \"eventMax\")
+              {\n emit(null, doc);
+              }
+            }"
+       },
+       "eventMax": {
+           "map": "function(doc) {\n
+              if (doc.type == \"eventMax\") {\n
+                  emit(doc._id, [doc._id, doc._rev]);
+              }
+            }"
+       }
+   }
+}

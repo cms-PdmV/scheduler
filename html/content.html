@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block head %}
+	{{ super() }}
+	<link rel="stylesheet" href="../javaScript/d3jsStyle.css">
+	<script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script>
+	<script src="http://d3js.org/d3.v3.js"></script>
+{% endblock %}
+
+{% block body %}
+	<div id="chart">
+		<script type="text/javascript" src="data"></script>
+		<script src="../javaScript/d3jsTimeTable.js"></script>
+	</div>
+{% endblock %}

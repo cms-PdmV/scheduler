@@ -1,0 +1,1 @@
+*/30 * * * * /afs/cern.ch/user/j/jskripka/scheduler/translator/bin/RunTranslator.sh

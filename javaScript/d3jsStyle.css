@@ -22,6 +22,127 @@ text.axis-workweek {
 
 text.axis-worktime {
   fill: #000;
-} 
+}
 
+#loading {
+	opacity: 0.8;
+	height: 100%;
+	width: 100%;
+	position: fixed;
+	z-index: 10;
+	background: url("ajax-loader.gif") no-repeat black 50%;
+}
+
+#help-upload {
+	opacity: 0.9;
+	height: 70%;
+	width: 70%;
+	position: fixed;
+	z-index: 9;
+	background-color: white;
+	border:1px solid;
+	left: 15%;
+	top: 15%;
+}
+
+#clickMessage {
+	float: right;
+	margin-right: 30px;
+}
+
+.drop-down-upload {
+	height:100px;
+	width: 200px;
+	text-align: center;
+	vertical-align: middle;
+	line-height: 100px;
+	border:1px solid;
+}
+
+#bad-requests-part {
+	width: 800px;
+}
+
+.margin-part {
+	margin:20px;
+}
+
+#slots-label {
+	margin-left: 21px;
+}
+
+.input-label {
+	display:inline;
+}
+
+#upload-error {
+	color:red;
+}
+
+.help {
+	background-color:#599bb3;
+	-moz-border-radius:28px;
+	-webkit-border-radius:28px;
+	border-radius:28px;
+	border:1px solid #29668f;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+	font-family:arial;
+	font-size:10px;
+	padding:2px 8px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #3d768a;
+}
+.help:hover {
+	background-color:#408c99;
+}
+.help:active {
+	position:relative;
+	top:1px;
+}
+
+#close-help-btn {
+	background-color: #ffffff;
+	color:#000000;
+	cursor:pointer;
+	font-family:arial;
+	font-size:10px;
+	padding:2px 8px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #3d768a;
+	float: right;
+}
+
+#close-help-btn:hover {
+	background-color: #eeeeee;
+}
+
+#messageDiv {
+	opacity: 0.9;
+	height: 70%;
+	width: 70%;
+	position: fixed;
+	z-index: 9;
+	background-color: white;
+	border:1px solid;
+	left: 15%;
+	top: 15%;
+}
+
+#closeMessage {
+	background-color: #ffffff;
+	color:#000000;
+	cursor:pointer;
+	font-family:arial;
+	font-size:10px;
+	padding:2px 8px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #3d768a;
+	float: right;
+}
+
+#closeMessage:hover {
+	background-color: #eeeeee;
+}
 

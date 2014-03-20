@@ -1,117 +1,48 @@
 #!/usr/bin/python
-# -*- coding: iso-8859-15 -*-
-
 import cherrypy
 import sys
-
-import os
-#from datetime import datetime
-#import httplib, simplejson  # http://cheeseshop.python.org/pypi/simplejson
-                            # Here only used for prettyprinting
-#import json      
-#import urllib2
-
-import Authentication
-from Authentication import *
-
-import HTMLPagesGenerator
-from HTMLPagesGenerator import *
-
-import Scheduler
+import csv
+import StringIO
 from Scheduler import *
-
-
-class Stop(object):
-    def index(self):
-        return """STOPING""" + sys.exit()
-    index.exposed = True
-
-
-class WelcomePage(object):
-    
-    def index(self):
-	return open(os.path.join('', 'html', 'welcome.html'));
-    index.exposed = True
-
-
-class LogInPage(object):
-
-    def index(self, username=None, password=None):
-	
-	isLogged = authentication.check(username, password);
-
-	if (isLogged):
-           raise cherrypy.HTTPRedirect(SERVER_NAME + "timeTable/");
-	else:
-	  authentication.logOut();
-	  generator = HTMLPagesGenerator();
-	  return generator.generateLogInForm();
-	  
-    index.exposed = True
-
-
-class TimeTablePage(object):
-
-    def index(self):
-
-	if not (authentication.authorizationTimeTable()):
-           raise cherrypy.HTTPRedirect(SERVER_NAME + "logIn/");
-
-	startDateStr = "2014-01-01 00:00:00";
-	startDateFormat = "%Y-%m-%d %H:%M:%S";
-	startSchedulingDate = datetime.strptime(startDateStr, startDateFormat);
-
-	ATTEMPS = 1;
-	measurement = "c(";
-	for i in range(ATTEMPS):
-	  timeBefore = datetime.now();
-	  shedule(startSchedulingDate);  
-	  timeAfter = datetime.now();
-
-	  diffTime = timeAfter - timeBefore;
-	  microseconds = diffTime.microseconds + 1000000*diffTime.seconds;
-	  measurement += str(microseconds/1000);
-	  if i != (ATTEMPS -1):
-	     measurement += ", ";
-	measurement += ")";
-
-        print "Measurement:";	
-	print measurement;
-
-        generator = HTMLPagesGenerator();
-        return generator.generateTimeTable();
-    index.exposed = True
-
-    def data(self):
-	if not (authentication.authorizationTimeTable()):
-           return "var data = [];";
-
-        return data();
-    data.exposed = True
-
-
+from CustomRequestHandler import CustomRequestHandler
 
 class Root(object):
 
-    stop = Stop();
+    def index(self, **parameters):
 
-    welcome = WelcomePage();
-    logIn = LogInPage();
-    timeTable = TimeTablePage();
+        # if parameters:
+        #     self.runCalculations(parameters)
+        # else:
+        #     self.runCalculations()
+        self.parametersQuery = parameters
 
-    def __init__(self):
-      generator = HTMLPagesGenerator();
-      generator.generate();
-
-    def index(self):
-        return self.welcome.index();
+        return open(os.path.join('', 'html', 'index.html'))
     index.exposed = True
 
-    def default(self):
-        return "Page not Found!";
-    default.exposed = True
+    def data(self, **parameters):
+        if parameters:
+            return data(parameters)
+        else:
+            return data(self.parametersQuery)
+    data.exposed = True
 
+    # def runCalculations(self, parameters=None):
+        # startDateFormat = "%Y-%m-%d %H:%M:%S";
+        # currentdate = datetime.now().strftime(startDateFormat)
+        # startSchedulingDate = datetime.strptime(currentdate, startDateFormat);
+        # shedule(startSchedulingDate, parameters);
 
+    def force(self):
+        # self.runCalculations()
+        return open(os.path.join('', 'html', 'index.html'))
+    force.exposed = True
+
+    def upload(self, **uploadedFile):
+        string_data = uploadedFile['file'].fullvalue()
+        input_file = csv.reader(StringIO.StringIO(string_data), csv.excel)
+        handler = CustomRequestHandler()
+        return handler.main(input_file)
+    upload.exposed = True
 
 if __name__ == '__main__':
-  cherrypy.quickstart(Root(), '/', 'TimeTable.conf')
+    cherrypy.quickstart(Root(), '/', 'TimeTable.conf')

@@ -1,0 +1,13 @@
+{
+   "_id": "_design/priority_time_blocks",
+   "language": "javascript",
+   "views": {
+       "sorted": {
+           "map":"function(doc) {\n
+  if (doc.type == \"priorityBlock\") {\n
+    emit([doc.priority], doc);\n
+  }\n
+}"
+       }
+   }
+}

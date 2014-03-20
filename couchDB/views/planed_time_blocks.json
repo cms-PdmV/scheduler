@@ -1,0 +1,26 @@
+{
+   "_id": "_design/planed_time_blocks",
+   "language": "javascript",
+   "views": {
+       "all": {
+           "map": "function(doc) {
+  if (doc.type == \"planedDeadlineBlock\") {
+    emit(null, doc);
+  }
+  if (doc.type == \"planedPriorityBlock\") {
+    emit(null, doc);
+  }
+}"
+       },
+       "ids": {
+           "map": "function(doc) {
+  if (doc.type == \"planedDeadlineBlock\") {
+    emit(doc._id, [doc._id, doc._rev]);
+  }
+  if (doc.type == \"planedPriorityBlock\") {
+    emit(doc._id, [doc._id, doc._rev]);
+  }
+}"
+       }
+   }
+}
