@@ -39,10 +39,7 @@ class CustomRequestHandler(DataParser):
 			except IndexError:
 				result = "Failed at " + str(index+1) + " data line, lacking data."
 				return result
-
-		for doc in docArray:
-			self.insertDocToDb(doc)
-		return "success"
+		return json.dumps(docArray)
 
 	def getSingleDoc(self, index, row, enumeratedDict):
 		eventsIndex = enumeratedDict['events']
@@ -50,7 +47,12 @@ class CustomRequestHandler(DataParser):
 		priorityIndex = enumeratedDict['priority']
 		authorIndex = enumeratedDict['author']
 		groupsIndex = enumeratedDict['groups']
-		keywordsIndex = enumeratedDict['keywords']
+		statusIndex = enumeratedDict['status']
+		prepidIndex = enumeratedDict['prepid']
+		energyIndex = enumeratedDict['energy']
+		pwgIndex = enumeratedDict['pwg']
+		memberIndex = enumeratedDict['member of campaign']
+		typeIndex = enumeratedDict['type']
 
 		if ("deadline" in enumeratedDict):
 			deadlineIndex = enumeratedDict['deadline']
@@ -76,7 +78,14 @@ class CustomRequestHandler(DataParser):
 
 		resultJSON["autor"] = row[authorIndex]
 		resultJSON["groups"] = row[groupsIndex]
-		resultJSON["keyWords"] = row[keywordsIndex].replace("\"", "")
+		keywordsJSON = {}
+		keywordsJSON["status"] = row[statusIndex]
+		keywordsJSON["prepid"] = row[prepidIndex]
+		keywordsJSON["energy"] = row[energyIndex]
+		keywordsJSON["pwg"] = row[pwgIndex]
+		keywordsJSON["member_of_campaign"] = row[memberIndex]
+		keywordsJSON["type"] = row[typeIndex]
+		resultJSON["keyWords"] = keywordsJSON
 
 		if (parsedPriority > 10):
 			parsedPriority = self.calculatePriority(parsedPriority)
@@ -98,14 +107,14 @@ class CustomRequestHandler(DataParser):
 		return column
 
 	def isDataMissing(self, data):
-		keys = ["author","events","groups","keywords","priority","time"]
+		keys = ["author","events","groups","priority","time", "status", "prepid", "energy", "pwg", "member of campaign", "type"]
 		for key in keys:
 			if (key not in data):
 				return "'" + key + "'" + " data is missing."
 		return "ok"
 
 	def enumerateList(self, list):
-		keys = ["author","events","groups","keywords","priority","deadline","time"]
+		keys = ["author","events","groups","keywords","priority","deadline","time", "status", "prepid", "energy", "pwg", "member of campaign", "type"]
 		enumeratedDict = {}
 
 		for index, item in enumerate(list):

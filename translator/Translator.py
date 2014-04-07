@@ -40,24 +40,44 @@ class Translator(DataParser):
                       (td.seconds + td.days * 24 * 3600) * 10**6)) / 10**6
 
     def getKeywords(self, doc):
-        resultList = []
+        resultList = {}
         if "energy" in doc and doc["energy"]:
-            resultList.append(str(doc["energy"]))
+            resultList["energy"] = str(doc["energy"])
         if "type" in doc and doc["type"]:
-            resultList.append(str(doc["type"]))
+            resultList["type"] = str(doc["type"])
         if "pwg" in doc and doc["pwg"]:
-            resultList.append(str(doc["pwg"]))
+            resultList["pwg"] = str(doc["pwg"])
         if "member_of_campaign" in doc and doc["member_of_campaign"]:
-            resultList.append(str(doc["member_of_campaign"]))
+            resultList["member_of_campaign"] = str(doc["member_of_campaign"])
         if "status" in doc and doc["status"]:
-            resultList.append(str(doc["status"]))
+            resultList["status"] = str(doc["status"])
         if "tags" in doc and doc["tags"]:
-            resultList.append(str(doc["tags"]))
+            resultList["tags"] = str(doc["tags"])
         if "prepid" in doc and doc["prepid"]:
-            resultList.append(str(doc["prepid"]))
+            resultList["prepid"] = str(doc["prepid"])
 
-        result = ", ".join(resultList)
-        return result
+        return resultList
+
+
+    # def getKeywords(self, doc):
+    #     resultList = []
+    #     if "energy" in doc and doc["energy"]:
+    #         resultList.append(str(doc["energy"]))
+    #     if "type" in doc and doc["type"]:
+    #         resultList.append(str(doc["type"]))
+    #     if "pwg" in doc and doc["pwg"]:
+    #         resultList.append(str(doc["pwg"]))
+    #     if "member_of_campaign" in doc and doc["member_of_campaign"]:
+    #         resultList.append(str(doc["member_of_campaign"]))
+    #     if "status" in doc and doc["status"]:
+    #         resultList.append(str(doc["status"]))
+    #     if "tags" in doc and doc["tags"]:
+    #         resultList.append(str(doc["tags"]))
+    #     if "prepid" in doc and doc["prepid"]:
+    #         resultList.append(str(doc["prepid"]))
+
+    #     result = ", ".join(resultList)
+    #     return result
 
     def getWidth(self, doc, parsedTotalEvents, parsedCompletedEvents):
         timePartCount = WIDTH_CONST

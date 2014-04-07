@@ -1,9 +1,0 @@
-{
-   "_id": "_design/deadline_time_blocks",
-   "language": "javascript",
-   "views": {
-       "sorted": {
-           "map": "function(doc){if(doc.type == \"deadlineBlock\"){emit([doc.deadline,doc.priority],doc);}}"
-       }
-   }
-}

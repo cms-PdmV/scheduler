@@ -1,9 +1,0 @@
-{
-   "_id": "_design/priority_time_blocks",
-   "language": "javascript",
-   "views": {
-       "sorted": {
-           "map":"function(doc){if(doc.type == \"priorityBlock\"){emit([doc.priority],doc);}}"
-       }
-   }
-}

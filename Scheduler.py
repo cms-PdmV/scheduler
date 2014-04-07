@@ -2,9 +2,12 @@ import cherrypy
 import sys
 from datetime import datetime
 from datetime import timedelta
+from CustomRequestHandler import CustomRequestHandler
 import httplib  # http://cheeseshop.python.org/pypi/simplejson
 import json as simplejson
-
+import ast
+import csv
+import StringIO
 import json
 import urllib2
 
@@ -43,9 +46,28 @@ class SchedulerInputBlockModel(object):
 
        keyWordsJson = json.dumps(valuesString['keyWords']);
        self.keyWords = remQuotation(keyWordsJson);
+       self.keyWordsArray = self.keywordsToString(json.loads(keyWordsJson))
 
        errorJson = json.dumps('false')
        self.error = remQuotation(errorJson)
+
+    def keywordsToString(self, keywords):
+        result = []
+        if ("status" in keywords):
+            result.append(keywords["status"])
+        if ("prepid" in keywords):
+            result.append(keywords["prepid"])
+        if ("energy" in keywords):
+            result.append(keywords["energy"])
+        if ("pwg" in keywords):
+            result.append(keywords["pwg"])
+        if ("member_of_campaign" in keywords):
+            result.append(keywords["member_of_campaign"])
+        if ("type" in keywords):
+            result.append(keywords["type"])
+        if ("tags" in keywords):
+            result.append(keywords["tags"])
+        return result
 
     def parseDeltaTime(self, delta):
 
@@ -98,15 +120,14 @@ class SchedulerInputDataModel:
 
         database = Couch(SERVERDB_NAME, SERVERDB_PORT);
 
-        deadlineTimeBlocksStr = database.openDoc(DATABASE_NAME, LINK_SORTED_DEADLINE_TIME_BLOCKS);
-        deadlineTimeBlocks = json.loads(deadlineTimeBlocksStr);
+        deadlineTimeBlocksStr = database.openDoc(DATABASE_NAME, LINK_SORTED_DEADLINE_TIME_BLOCKS)
+        deadlineTimeBlocks = json.loads(deadlineTimeBlocksStr)
 
         priorityTimeBlocksStr = database.openDoc(DATABASE_NAME, LINK_SORTED_PRIORITY_TIME_BLOCKS);
-        priorityTimeBlocks = json.loads(priorityTimeBlocksStr);
+        priorityTimeBlocks = json.loads(priorityTimeBlocksStr)
 
-        #self.parameters = parameters
         self.initParameters(parameters)
-        self.parse(deadlineTimeBlocks, priorityTimeBlocks);
+        self.parse(deadlineTimeBlocks, priorityTimeBlocks)
 
     def castToInt(self, integer):
         try:
@@ -123,7 +144,7 @@ class SchedulerInputDataModel:
           if (self.parameters["slots"] == "") or (self.castToInt(self.parameters["slots"]) == None):
             self.parameters.pop("slots", None)
           else:
-              self.eventAxis = self.castToInt(self.parameters["slots"]);
+              self.eventAxis = self.castToInt(self.parameters["slots"])
 
         if (self.parameters) and ("keywords" in self.parameters):
           if self.parameters["keywords"] == "":
@@ -134,7 +155,6 @@ class SchedulerInputDataModel:
 
 
     def keywordExist(self, blockKeywords):
-        blockKeywords = blockKeywords.split(", ")
         if list(set(self.parameters["keywords"]) & set(blockKeywords)):
             return True
         else:
@@ -149,7 +169,7 @@ class SchedulerInputDataModel:
                 return False
 
         if "keywords" in self.parameters:
-            if not self.keywordExist(block.keyWords):
+            if not self.keywordExist(block.keyWordsArray):
                 return False
 
         return True
@@ -158,29 +178,75 @@ class SchedulerInputDataModel:
     def parse(self, deadlineBlocksString, priorityTimeBlocksString):
         self.inputDeadlineBlocks = [];
         self.inputPriorityBlocks = [];
+        sourceArray = self.parameters["source"].split(",")
 
-        deadlineBlocksRowsCount = deadlineBlocksString['total_rows'];
-        # print deadlineBlocksRowsCount
-        deadlineBlocksRowsValues = deadlineBlocksString['rows'];
+        self.getMcmData(sourceArray, deadlineBlocksString, priorityTimeBlocksString)
+        self.getUploadedData(sourceArray)
+        self.getTemporaryData()
 
-        for i in range(deadlineBlocksRowsCount):
+    def getTemporaryData(self):
+        if (self.parameters) and ("tempCsv" in self.parameters) and (self.parameters["tempCsv"] != ""):
+            self.parameters["tempCsv"] = ast.literal_eval(self.parameters["tempCsv"])
+        else:
+            return None
 
-            deadlineBlockStringI = deadlineBlocksRowsValues[i]['value'];
-            deadlineBlockI = SchedulerInputDeadlineBlockModel(deadlineBlockStringI);
+        for blockValues in self.parameters["tempCsv"]:
+            self.addBlocks(blockValues)
+
+    def getUploadedData(self, sourceArray):
+        configLen = len(sourceArray)
+        for index in range(configLen):
+            if (index % 2 == 0 and index > 0 and index+1 < configLen and sourceArray[index+1] == "true"):
+                path = CSV_FOLDER_NAME + '/' + sourceArray[index]
+                if os.path.isfile(path):
+                    with open(path, 'rb') as srcFile:
+                        dataString = srcFile.read()
+                    srcFile.closed
+                    input_file = csv.reader(StringIO.StringIO(dataString), csv.excel)
+                    handler = CustomRequestHandler()
+                    try:
+                        jsonData = json.loads(handler.main(input_file))
+
+                        for blockValues in jsonData:
+                            block = json.loads(blockValues)
+                            self.addBlocks(block)
+                    except ValueError:
+                        jsonData = ""
+
+    def getMcmData(self, sourceArray, deadlineBlocksString, priorityTimeBlocksString):
+        if ("mcm" in sourceArray and len(sourceArray) > 1 and sourceArray[1] == "true"):
+            deadlineBlocksRowsCount = deadlineBlocksString['total_rows']
+            deadlineBlocksRowsValues = deadlineBlocksString['rows']
+
+            for i in range(deadlineBlocksRowsCount):
+
+                deadlineBlockStringI = deadlineBlocksRowsValues[i]['value']
+                deadlineBlockI = SchedulerInputDeadlineBlockModel(deadlineBlockStringI)
+                if self.checkParameters(deadlineBlockI):
+                    self.inputDeadlineBlocks.append(deadlineBlockI)
+
+
+            priorityBlocksRowsCount = priorityTimeBlocksString['total_rows']
+            priorityBlocksRowsValues = priorityTimeBlocksString['rows']
+
+            for i in range(priorityBlocksRowsCount):
+
+                priorityBlockStringI = priorityBlocksRowsValues[i]['value']
+                priorityBlockI = SchedulerInputPriorityBlockModel(priorityBlockStringI)
+                if self.checkParameters(priorityBlockI):
+                    self.inputPriorityBlocks.append(priorityBlockI)
+
+    def addBlocks(self, blocks):
+        if ("deadline" in blocks):
+            deadlineBlockI = SchedulerInputDeadlineBlockModel(blocks)
+
             if self.checkParameters(deadlineBlockI):
-                self.inputDeadlineBlocks.append(deadlineBlockI);
+                self.inputDeadlineBlocks.append(deadlineBlockI)
+        else:
+            priorityBlockI = SchedulerInputPriorityBlockModel(blocks)
 
-
-        priorityBlocksRowsCount = priorityTimeBlocksString['total_rows'];
-        priorityBlocksRowsValues = priorityTimeBlocksString['rows'];
-        # print priorityBlocksRowsCount
-
-        for i in range(priorityBlocksRowsCount):
-
-            priorityBlockStringI = priorityBlocksRowsValues[i]['value'];
-            priorityBlockI = SchedulerInputPriorityBlockModel(priorityBlockStringI);
             if self.checkParameters(priorityBlockI):
-                self.inputPriorityBlocks.append(priorityBlockI);
+                self.inputPriorityBlocks.append(priorityBlockI)
 
     def getDeadlines(self):
         deadlineBlocks = self.inputDeadlineBlocks;
@@ -239,11 +305,6 @@ class SchedulerOutputBlockModel(object):
 
        return outputDict
 
-    # def footerOfJson(self):
-    #    return """
-    #       }
-    #       """;
-
     def timedeltaToString(self, timedelta):
        days = timedelta.days;
        hours = timedelta.seconds/60/60;
@@ -274,12 +335,6 @@ class SchedulerOutputDeadlineBlockModel(SchedulerOutputBlockModel):
 
        return json.dumps(outputDict)
 
-    # writes OutputDeadlineBlocks to database
-    # def writeInDatabase(self):
-    #     doc = self.getJson();
-    #     database = Couch(SERVERDB_NAME, SERVERDB_PORT);
-    #     database.saveDoc(DATABASE_NAME, doc);
-
 
 # Class represents model of OutputPriorityBlocks for SchedulerOutputBlockModel
 class SchedulerOutputPriorityBlockModel(SchedulerOutputBlockModel):
@@ -298,71 +353,12 @@ class SchedulerOutputPriorityBlockModel(SchedulerOutputBlockModel):
 
        return json.dumps(outputDict)
 
-    # writes OutputPriorityBlocks to database
-    # def writeInDatabase(self):
-    #     doc = self.getJson();
-    #     database = Couch(SERVERDB_NAME, SERVERDB_PORT);
-    #     database.saveDoc(DATABASE_NAME, doc);
-
 
 # Class represents model of OutputBlock for Scheduler
 class SchedulerOutputDataModel:
         def __init__(self, outputDeadlineBlocks, outputPriorityBlocks):
                 self.outputDeadlineBlocks = outputDeadlineBlocks;
                 self.outputPriorityBlocks = outputPriorityBlocks;
-
-    # write planned tasks to database
-        # def writeInDatabase(self):
-
-        #         for deadlineBlockI in self.outputDeadlineBlocks:
-        #                 deadlineBlockI.writeInDatabase();
-
-        #         for priorityBlockI in self.outputPriorityBlocks:
-        #                 priorityBlockI.writeInDatabase();
-
-        # def writeToDatabaseEventMax(self, eventNr):
-        #         eventMaxDoc = {}
-        #         eventMaxDoc['type'] = "eventMax"
-        #         eventMaxDoc['max'] = eventNr
-        #         doc = json.dumps(eventMaxDoc)
-        #         database = Couch(SERVERDB_NAME, SERVERDB_PORT);
-        #         database.saveDoc(DATABASE_NAME, doc);
-
-        # def removeFromDatabase(self, view):
-        #         database = Couch(SERVERDB_NAME, SERVERDB_PORT)
-
-        #         docsStr = database.openDoc(DATABASE_NAME, view)
-        #         docs = json.loads(docsStr)
-
-        #         docsCount = docs['total_rows']
-        #         docsValues = docs['rows']
-
-        #         for i in range(docsCount):
-        #                 docsId = docsValues[i]['value'][0]
-        #                 docsRev = docsValues[i]['value'][1]
-
-        #                 docsIdPlusRev = docsId + "?rev=" + docsRev
-        #                 database.deleteDoc(DATABASE_NAME, docsIdPlusRev)
-
-    # remove planned tasks from database
-        # def removeRecordsInDatabase(self):
-        #         self.removeFromDatabase(LINK_ID_OF_PLANDED_TIME_BLOCKS);
-        #         self.removeFromDatabase(EVENT_MAX_VIEW);
-
-# Public global function
-# This function starts sheduler
-# def shedule(startSchedulingDate, parameters=None):
-        # data(parameters)
-        # inputDataModel = SchedulerInputDataModel(parameters);
-
-        # eventNr = inputDataModel.eventAxis;
-        # scheduler = Scheduler(inputDataModel, startSchedulingDate, eventNr);
-        # scheduler.go();
-
-        # outputModel = scheduler.getOutputDataModel();
-        # outputModel.removeRecordsInDatabase();
-        # outputModel.writeInDatabase();
-        # outputModel.writeToDatabaseEventMax(eventNr)
 
 def getDocsFromDatabase(view):
         database = Couch(SERVERDB_NAME, SERVERDB_PORT);
@@ -377,33 +373,23 @@ def data(parameters=None):
         currentdate = datetime.now().strftime(startDateFormat)
         startSchedulingDate = datetime.strptime(currentdate, startDateFormat)
 
-        inputDataModel = SchedulerInputDataModel(parameters);
-
+        inputDataModel = SchedulerInputDataModel(parameters)
         eventNr = inputDataModel.eventAxis;
-        scheduler = Scheduler(inputDataModel, startSchedulingDate, eventNr);
+        scheduler = Scheduler(inputDataModel, startSchedulingDate, eventNr)
         scheduler.go();
 
         outputModel = scheduler.getOutputDataModel();
-        # outputModel.removeRecordsInDatabase();
-        # outputModel.writeInDatabase();
-        # outputModel.writeToDatabaseEventMax(eventNr)
-
-        # planedBlocks = getDocsFromDatabase(LINK_PLANDED_TIME_BLOCKS)
-        # eventMaxDoc = getDocsFromDatabase(EVENT_MAX_VIEW_ALL)
-
-        # eventMaxValues = eventMaxDoc['rows']
-        # print eventMaxValues
-
         output = "var data = "
         # {fields:[\n";
         outputDict = {}
         outputDict['fields'] = {}
+
         if (eventNr > 0):
                 outputDict['eventMax'] = eventNr
         else:
                 outputDict['eventMax'] = 86490
-        dictList = []
 
+        dictList = []
         iteratedBlocks = outputModel.outputDeadlineBlocks + outputModel.outputPriorityBlocks
 
         for value in iteratedBlocks:
@@ -432,7 +418,6 @@ def data(parameters=None):
 
 
         outputDict['fields'] = dictList
-        # return output + json.dumps(outputDict)
         return json.dumps(outputDict)
 
 # Class represents Scheduler for planning tasks
