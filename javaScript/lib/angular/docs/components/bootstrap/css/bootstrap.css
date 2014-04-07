@@ -85,10 +85,7 @@ input[type="button"],
 input[type="reset"],
 input[type="submit"] {
   cursor: pointer;
-<<<<<<< HEAD
   color: black;
-=======
->>>>>>> b7dda51e9b4dd08fa19bd9297bd9bf172da01be7
   -webkit-appearance: button;
 }
 input[type="search"] {
@@ -675,10 +672,7 @@ input[type="file"] {
   -webkit-box-shadow: none;
   -moz-box-shadow: none;
   box-shadow: none;
-<<<<<<< HEAD
   color: black;
-=======
->>>>>>> b7dda51e9b4dd08fa19bd9297bd9bf172da01be7
 }
 input[type="button"],
 input[type="reset"],
