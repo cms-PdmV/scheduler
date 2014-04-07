@@ -39,7 +39,14 @@ class CustomRequestHandler(DataParser):
 			except IndexError:
 				result = "Failed at " + str(index+1) + " data line, lacking data."
 				return result
+<<<<<<< HEAD
 		return json.dumps(docArray)
+=======
+
+		for doc in docArray:
+			self.insertDocToDb(doc)
+		return "success"
+>>>>>>> b7dda51e9b4dd08fa19bd9297bd9bf172da01be7
 
 	def getSingleDoc(self, index, row, enumeratedDict):
 		eventsIndex = enumeratedDict['events']
@@ -47,12 +54,16 @@ class CustomRequestHandler(DataParser):
 		priorityIndex = enumeratedDict['priority']
 		authorIndex = enumeratedDict['author']
 		groupsIndex = enumeratedDict['groups']
+<<<<<<< HEAD
 		statusIndex = enumeratedDict['status']
 		prepidIndex = enumeratedDict['prepid']
 		energyIndex = enumeratedDict['energy']
 		pwgIndex = enumeratedDict['pwg']
 		memberIndex = enumeratedDict['member of campaign']
 		typeIndex = enumeratedDict['type']
+=======
+		keywordsIndex = enumeratedDict['keywords']
+>>>>>>> b7dda51e9b4dd08fa19bd9297bd9bf172da01be7
 
 		if ("deadline" in enumeratedDict):
 			deadlineIndex = enumeratedDict['deadline']
@@ -78,6 +89,7 @@ class CustomRequestHandler(DataParser):
 
 		resultJSON["autor"] = row[authorIndex]
 		resultJSON["groups"] = row[groupsIndex]
+<<<<<<< HEAD
 		keywordsJSON = {}
 		keywordsJSON["status"] = row[statusIndex]
 		keywordsJSON["prepid"] = row[prepidIndex]
@@ -86,6 +98,9 @@ class CustomRequestHandler(DataParser):
 		keywordsJSON["member_of_campaign"] = row[memberIndex]
 		keywordsJSON["type"] = row[typeIndex]
 		resultJSON["keyWords"] = keywordsJSON
+=======
+		resultJSON["keyWords"] = row[keywordsIndex].replace("\"", "")
+>>>>>>> b7dda51e9b4dd08fa19bd9297bd9bf172da01be7
 
 		if (parsedPriority > 10):
 			parsedPriority = self.calculatePriority(parsedPriority)
@@ -107,14 +122,22 @@ class CustomRequestHandler(DataParser):
 		return column
 
 	def isDataMissing(self, data):
+<<<<<<< HEAD
 		keys = ["author","events","groups","priority","time", "status", "prepid", "energy", "pwg", "member of campaign", "type"]
+=======
+		keys = ["author","events","groups","keywords","priority","time"]
+>>>>>>> b7dda51e9b4dd08fa19bd9297bd9bf172da01be7
 		for key in keys:
 			if (key not in data):
 				return "'" + key + "'" + " data is missing."
 		return "ok"
 
 	def enumerateList(self, list):
+<<<<<<< HEAD
 		keys = ["author","events","groups","keywords","priority","deadline","time", "status", "prepid", "energy", "pwg", "member of campaign", "type"]
+=======
+		keys = ["author","events","groups","keywords","priority","deadline","time"]
+>>>>>>> b7dda51e9b4dd08fa19bd9297bd9bf172da01be7
 		enumeratedDict = {}
 
 		for index, item in enumerate(list):

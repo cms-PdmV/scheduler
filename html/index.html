@@ -1,5 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" ng-app="schedulerModule">
+<<<<<<< HEAD
 	<head>
 			<title>Scheduler</title>
 			<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -108,4 +109,100 @@
 		</div>
 
 	</body>
+=======
+  <head>
+      <title>Scheduler</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      <meta name="description" content="Scheduler" />
+      <script src="javaScript/lib/angular/angular.js"></script>
+      <script src="javaScript/controllers.js"></script>
+      <link rel="stylesheet" href="javaScript/d3jsStyle.css">
+      <link rel="stylesheet" href="javaScript/lib/angular/docs/components/bootstrap/css/bootstrap.css">
+      <script src="javaScript/dist/angular-file-upload.min.js"></script>
+      <script type="text/javaScript" src="https://code.jquery.com/jquery-latest.js"></script>
+      <script src="javaScript/d3.v3.js"></script>
+  </head>
+
+  <body ng-controller="Scheduler" ng-init="schedule()" class="ng-cloak" >
+
+    <div id="loading" ng-show="loadingFlag" >
+    </div>
+
+    <div id="help-upload" ng-show="helpUploadFlag">
+      <input type="button" value="X" id="close-help-btn" ng-click="helpUpload()">
+      <div class="margin-part">
+        <p>Scheduler reads "CSV" files. <br>
+        Working directly with excel go to "file"->"save as"->choose csv format and comma as separator. <br>
+        Working with csv directly do not leave empty spaces between comma separated values.<br>
+        First row is column names (author,groups,priority,events,keywords,time, deadline). <br>
+        Order that column names are listed does not matter.</p>
+        <p>Required columns and values:</p>
+        <ul>
+          <li>author -> name of an author, can be none.</li>
+          <li>groups -> groups that request belongs to, can be none. </li>
+          <li>priority -> has to be between 1 and 10, wrong values default to priority = 1. </li>
+          <li>events -> number of total events in request, has to be above ~30000, otherwise request will not be added.</li>
+          <li>keywords -> variety of values separated by comma (like: status, prepid, tags and etc.). In excel entered to a single field, in csv wrapped with quatation marks.</li>
+          <li>time -> time in seconds it takes to proccess one event in a system.</li>
+        </ul>
+        <p>Optional columns and values:</p>
+        <ul>
+          <li>
+            deadline -> date until request has to be completed, format of date "year-month-day hour:minutes:seconds" (for example: 2014-01-01 20:00:00).
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  	<div id="chart">
+      <script src="javaScript/d3jsTimeTable.js"></script>
+    </div>
+    <div id="clickMessage"></div>
+
+    <div class="margin-part">
+    Start date:
+      <select ng-model="startDate">
+        <option value={{date}} ng-repeat="date in datesStart">{{date}}</option>
+      </select>
+    End date:
+      <select ng-model="endDate">
+        <option value={{date}} ng-selected="{{date == endDate}}" ng-repeat="date in datesEnd">{{date}}</option>
+      </select>
+    </div>
+
+
+    <div class="margin-part">
+      <!-- <form name="keywords-form" action="index"> -->
+      <form novalidate name="keywords-form">
+        <label class="input-label" for="keywords-field">Keywords: </label>
+        <input type="text" id="keywords-field" name="keywords" ng-model="keywords">
+        <label class="input-label" id="slots-label" for="slots-field">Slots: </label>
+        <input type="text" id="slots-field" name="slots" ng-model="slots">
+        <input type="submit" value="Redraw" ng-click="schedule()">
+      </form>
+
+      <a class="help" ng-click="helpUpload()">?</a>
+      <input type="file" ng-file-select="onFileSelect($files)" >
+      <p id="upload-error" ng-show="uploadError">Error: {{uploadErrorMsg}}</p>
+      <div class="drop-down-upload" ng-file-drop="onFileSelect($files)" ng-file-drag-over-class="optional-css-class" ng-show="dropSupported">drop csv file here</div>
+      <div ng-file-drop-available="dropSupported=true" ng-show="!dropSupported">HTML5 Drop File is not supported!</div>
+    </div>
+
+    <div class="margin-part" ng-show="filteredRequests.length">
+      <input type="button" value="Bad requests..." ng-click="onClickBadRequests()">
+      <ul id="bad-requests-part" ng-show="brequestsFlag">
+        <li ng-repeat="request in filteredRequests  = (requestFields | filter:{error:true})">
+          <!-- {{request.error}} -->
+          <!-- <p>Value: {{request.value}}</p> -->
+          <!-- <p>EventStartNumber: {{request.event}}</p> -->
+          <!-- <p>EventStartDate: {{request.hour}}</p> -->
+          <p>Keywords: {{request.keywords}}</p>
+          <!-- <p>Height: {{request.height}}</p> -->
+          <!-- <p>Width: {{request.width}}</p> -->
+        </li>
+      </ul>
+    </div>
+
+  </body>
+>>>>>>> b7dda51e9b4dd08fa19bd9297bd9bf172da01be7
 </html>

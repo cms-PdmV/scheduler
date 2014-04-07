@@ -40,6 +40,7 @@ class Translator(DataParser):
                       (td.seconds + td.days * 24 * 3600) * 10**6)) / 10**6
 
     def getKeywords(self, doc):
+<<<<<<< HEAD
         resultList = {}
         if "energy" in doc and doc["energy"]:
             resultList["energy"] = str(doc["energy"])
@@ -78,6 +79,26 @@ class Translator(DataParser):
 
     #     result = ", ".join(resultList)
     #     return result
+=======
+        resultList = []
+        if "energy" in doc and doc["energy"]:
+            resultList.append(str(doc["energy"]))
+        if "type" in doc and doc["type"]:
+            resultList.append(str(doc["type"]))
+        if "pwg" in doc and doc["pwg"]:
+            resultList.append(str(doc["pwg"]))
+        if "member_of_campaign" in doc and doc["member_of_campaign"]:
+            resultList.append(str(doc["member_of_campaign"]))
+        if "status" in doc and doc["status"]:
+            resultList.append(str(doc["status"]))
+        if "tags" in doc and doc["tags"]:
+            resultList.append(str(doc["tags"]))
+        if "prepid" in doc and doc["prepid"]:
+            resultList.append(str(doc["prepid"]))
+
+        result = ", ".join(resultList)
+        return result
+>>>>>>> b7dda51e9b4dd08fa19bd9297bd9bf172da01be7
 
     def getWidth(self, doc, parsedTotalEvents, parsedCompletedEvents):
         timePartCount = WIDTH_CONST
