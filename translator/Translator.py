@@ -17,20 +17,6 @@ class Translator(DataParser):
     def insertDocToDb(self, doc):
         return self.couchDest.saveDoc(DEST_DB_NAME, doc)
 
-    def getAuthor(self, doc):
-        result = ""
-
-        if "generator_parameters" not in doc:
-            return result
-
-        for param in doc["generator_parameters"]:
-            if "submission_details" in param:
-                if "author_name" in param["submission_details"]:
-                    result += param["submission_details"]["author_name"]
-                    result += " "
-
-        return result
-
     def parseDateTime(self, date, time):
         dateModified = "20" + date
         return datetime.strptime(dateModified + time, "%Y%m%d%H%M%S")
@@ -58,37 +44,19 @@ class Translator(DataParser):
 
         return resultList
 
-
-    # def getKeywords(self, doc):
-    #     resultList = []
-    #     if "energy" in doc and doc["energy"]:
-    #         resultList.append(str(doc["energy"]))
-    #     if "type" in doc and doc["type"]:
-    #         resultList.append(str(doc["type"]))
-    #     if "pwg" in doc and doc["pwg"]:
-    #         resultList.append(str(doc["pwg"]))
-    #     if "member_of_campaign" in doc and doc["member_of_campaign"]:
-    #         resultList.append(str(doc["member_of_campaign"]))
-    #     if "status" in doc and doc["status"]:
-    #         resultList.append(str(doc["status"]))
-    #     if "tags" in doc and doc["tags"]:
-    #         resultList.append(str(doc["tags"]))
-    #     if "prepid" in doc and doc["prepid"]:
-    #         resultList.append(str(doc["prepid"]))
-
-    #     result = ", ".join(resultList)
-    #     return result
-
     def getWidth(self, doc, parsedTotalEvents, parsedCompletedEvents):
         timePartCount = WIDTH_CONST
+
         for reqmgrName in doc["reqmgr_name"]:
             reqmgrContent = reqmgrName["content"]
+
             if ("pdmv_submission_date" in reqmgrName["content"]):
                 reqSubmisDate = reqmgrContent["pdmv_submission_date"]
                 reqSubmisTime = reqmgrContent["pdmv_submission_time"]
                 period = datetime.now() - self.parseDateTime(reqSubmisDate, reqSubmisTime)
                 ratio = parsedCompletedEvents  / self.totalSeconds(period)
                 timePartCount = parsedTotalEvents * ratio
+
         return timePartCount
 
     #required fields:
@@ -119,10 +87,10 @@ class Translator(DataParser):
             return None
 
         priority = self.parseField(doc["priority"])
+
         if (priority == None):
             priority = 1
 
-        resultJSON["autor"] = self.getAuthor(doc)
         resultJSON["groups"] = ""
         resultJSON["keyWords"] = self.getKeywords(doc)
         resultJSON["priority"] = self.calculatePriority(priority)
@@ -146,8 +114,10 @@ class Translator(DataParser):
         content = requests.get(SRC_DB_NAME, verify=False)
         content = content.json()
         listOfDocs = content['results']
+
         for doc in listOfDocs:
             transformedDoc = self.transformDoc(doc)
+
             if transformedDoc is not None:
                 self.insertDocToDb(transformedDoc)
 

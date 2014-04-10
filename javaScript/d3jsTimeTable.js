@@ -1,13 +1,14 @@
 /*global $:false, jQuery:false, d3:false, dataModel:false */
 
+//namespace
 var Scheduler = Scheduler || {};
+
 // DateDifferenceClass represents date difference
 Scheduler.DateDifferenceClass = function(dateDifferenceString) {
-    // function parse string to this instance of DateDifferenceClass
     "use strict";
 
+    // function parse string to this instance of DateDifferenceClass
     this.parse = function(dateDifferenceString) {
-
         var dayStartIndex =
             dateDifferenceString.indexOf("days=") + "days=".length;
         var dayEndIndex =
@@ -38,7 +39,6 @@ Scheduler.DateDifferenceClass = function(dateDifferenceString) {
 
     // function is doing plus date difference
     this.plusDifference = function(dateDifferenceToPlus) {
-
         var dateDiff = dateDifferenceToPlus;
 
         var daysSum = parseInt(this.days) + parseInt(dateDiff.days);
@@ -55,7 +55,6 @@ Scheduler.DateDifferenceClass = function(dateDifferenceString) {
 
     // function is doing minus this date difference
     this.minusDifference = function(dateDifferenceToMinus) {
-
         var dateDiff = dateDifferenceToMinus;
 
         var daysDiff = parseInt(this.days) - parseInt(dateDiff.days);
@@ -160,7 +159,6 @@ Scheduler.DateClass = function(dateString) {
 
     // function returns DateDifferenceClass between dateMinuend, dateSubtrahend
     this.getDifference = function(dateMinuend, dateSubtrahend) {
-
         var dateM = dateMinuend.date;
         var dateS = dateSubtrahend.date;
 
@@ -225,7 +223,6 @@ Scheduler.SchedulerDataModelClass = function() {
     "use strict";
 
     this.initialization = function(startDateInput, endDateInput, data, customDates) {
-
         this.totalWidth = 900;
         this.totalHeight = 530;
 
@@ -260,6 +257,9 @@ Scheduler.SchedulerDataModelClass = function() {
         var endDateString;
 
         endDate = this.getLastDeadline();
+
+        var currentDay = endDate.getDate();
+        endDate.setDate(currentDay + 1);
 
         if (endDate !== undefined) {
             endDateString = endDate.getStringDate() + " " + endDate.timeNow();
@@ -296,11 +296,8 @@ Scheduler.SchedulerDataModelClass = function() {
         for (var blockIndex = 0; blockIndex < this.dataSource.length; blockIndex++) {
             var timeBlockI = this.getTimeBlock(blockIndex);
             var dateHour = timeBlockI.hour;
-            // var typeB = timeBlockI.type;
-            // if (typeB == "planedDeadlineBlock"){
             allStringDates[deadlines] = dateHour;
             deadlines++;
-            // }
         }
         return this.parseAndCompareDates(allStringDates);
     };
@@ -387,7 +384,6 @@ Scheduler.SchedulerDataModelClass = function() {
 
     // Function returns only blocks which are inside of showed space
     this.getOverlapedTimeBlocks = function() {
-
         this.planedBlocks = [];
         this.planedPriorityBlocks = [];
         this.planedDeadlineBlocks = [];
@@ -398,16 +394,8 @@ Scheduler.SchedulerDataModelClass = function() {
             var timeBlockI = jQuery.extend(true, {}, timeBlockSourceI);
             var keywords = timeBlockI.keywords;
             var typeB = timeBlockI.type;
-            var keywordsJson = "";
 
-            try {
-                keywordsJson = keywords.replace(/(['"])?([a-zA-Z0-9_\-\.\'']+)(['"])?/g, "\"$2\" ");
-                keywordsJson = JSON.parse(keywordsJson);
-            } catch (err) {
-                keywordsJson = "";
-            }
-
-            timeBlockI = $.extend({}, timeBlockI, keywordsJson);
+            timeBlockI = $.extend({}, timeBlockI, keywords);
 
             if (typeB == PRIORITY_TIME_BLOCK_TYPE) {
                 this.planedPriorityBlocks.push(timeBlockI);
@@ -551,7 +539,7 @@ Scheduler.MainScheduler = function() {
 
             if (fieldType == colorButtonValues[index]) {
                 colorButton.style("background-color", "#38764C");
-                colorButton.style("color", "#000000");
+                colorButton.style("color", "#FFFFFF");
             }
         }
     };
@@ -559,10 +547,9 @@ Scheduler.MainScheduler = function() {
     var fieldType = "value";
     // function draws timetable to canvas
     var drawTimeTable = function() {
-
         //--------------initialize variables-------------------------------
         var customColors = {};
-        var baseColor = 2910056;
+        var baseColor = 12826523;
         var colorIncrement = 30003;
         var labelSpaces = 20;
         var durationForCalc = 1500;
@@ -575,7 +562,6 @@ Scheduler.MainScheduler = function() {
         var labelColorHeight = 15;
         var schedulerWidth = dataModel.width + dataModel.margin.left + dataModel.margin.right;
         var schedulerHeight = dataModel.height + dataModel.margin.top + dataModel.margin.bottom;
-        // var colorLabelX = schedulerWidth + 30;
         var titleX = 320;
         var titleY = -92;
 
@@ -588,6 +574,7 @@ Scheduler.MainScheduler = function() {
         colorButtonList.Status = "status";
         colorButtonList.Tags = "tags";
         colorButtonList.Prepid = "prepid";
+        colorButtonList.Source = "source";
 
         //-------------visualize scheduler--------------------------------
         var svg = d3.select("#chart").append("svg")
@@ -666,7 +653,9 @@ Scheduler.MainScheduler = function() {
                 return dataModel.getDateLabelY(i);
             });
 
-        var heatMap = svg.selectAll(".hour")
+        var svgGraph = svg.append("svg");
+
+        var heatMap = svgGraph.selectAll(".hour")
             .data(dataModel.planedBlocks)
             .enter().append("rect")
             .attr("type", function(d) {
@@ -699,8 +688,9 @@ Scheduler.MainScheduler = function() {
                     if (fieldKey in customColors) {
                         return customColors[fieldKey];
                     } else {
+                        baseColor = getColor(baseColor);
+
                         customColors[fieldKey] = "#" + baseColor.toString(16);
-                        baseColor += colorIncrement;
                         return customColors[fieldKey];
                     }
                 })
@@ -801,7 +791,7 @@ Scheduler.MainScheduler = function() {
             .attr("y", dataModel.height + 5 * dataModel.getLegendElementHeight());
 
         //------scheduler animations and other graphic elements-------------
-        var priorityBlocksHatch = svg.selectAll(".hour2")
+        var priorityBlocksHatch = svgGraph.selectAll(".hour2")
             .data(dataModel.planedPriorityBlocks)
             .enter().append("rect")
             .attr("type", PRIORITY_TIME_BLOCK_TYPE)
@@ -867,6 +857,25 @@ Scheduler.MainScheduler = function() {
         });
     };
 
+    var getColor = function(colorDecimal) {
+        var goldenRatio = 1.61803398875;
+        var newColor = colorDecimal * goldenRatio;
+        var maxColor = 16770215;
+        var minColor = 2826523;
+
+        //if new color above max color
+        if (newColor > maxColor) {
+            newColor = newColor - maxColor;
+            newColor = newColor * goldenRatio;
+        }
+
+        if (newColor < minColor) {
+            newColor = minColor + newColor;
+        }
+
+        return Math.round(newColor);
+    };
+
     this.drawTimeTableFunc = function() {
         drawTimeTable();
     };
@@ -894,6 +903,10 @@ Scheduler.MainScheduler = function() {
 Scheduler.EventListeners = function() {
     "use strict";
 
+    var isSelected = false;
+    var oldSelection;
+    var oldColor;
+
     var removePopupMessage = function() {
         d3.select("#messageDiv").remove();
 
@@ -904,8 +917,6 @@ Scheduler.EventListeners = function() {
     };
 
     // Function handler - Click
-    var isSelected = false;
-    var oldSelection;
     this.rectangleClicked = function(dIn) {
         isSelected = !isSelected;
         var selection;
@@ -916,6 +927,13 @@ Scheduler.EventListeners = function() {
             oldSelection = this;
 
             selection = d3.select(this);
+
+            if (selection[0][0]["style"]["fill"] != "") {
+                oldColor = selection[0][0]["style"]["fill"];
+            } else {
+                oldColor = "url(#diagonalHatch)";
+            }
+
             selection.style("fill", "#FF0000");
 
             drawMsgOnClick(dIn);
@@ -932,10 +950,7 @@ Scheduler.EventListeners = function() {
         var yAxis = 30;
         var yMargin = 20;
         var xMargin = 10;
-        // var msgSvgHeight = 500;
-        var titleTextSize = "15px";
-        var regularTextSize = "12px";
-        var sublistTextSize = "11px";
+        var keywords = dIn.keywords;
 
         d3.select("#clickMessage").append("div")
             .attr("id", "messageDiv")
@@ -952,81 +967,69 @@ Scheduler.EventListeners = function() {
             .append("g");
 
         svg.append("text")
+            .attr("class", "titleText")
             .text("Scheduled request information")
             .attr("x", xAxis)
-            .attr("y", yAxis)
-            .attr("font-size", titleTextSize);
+            .attr("y", yAxis);
 
         svg.append("text")
+            .attr("class", "regularText")
             .text("Value: " + dIn.value)
             .attr("x", xAxis += xMargin / 2)
-            .attr("y", yAxis += yMargin)
-            .attr("font-size", regularTextSize);
+            .attr("y", yAxis += yMargin);
 
         svg.append("text")
+            .attr("class", "regularText")
             .text("EventStartNumber: " + dIn.event)
             .attr("x", xAxis)
-            .attr("y", yAxis += yMargin)
-            .attr("font-size", regularTextSize);
+            .attr("y", yAxis += yMargin);
 
         svg.append("text")
+            .attr("class", "regularText")
             .text("EventStartDate: " + dIn.hour)
             .attr("x", xAxis)
-            .attr("y", yAxis += yMargin)
-            .attr("font-size", regularTextSize);
+            .attr("y", yAxis += yMargin);
 
         svg.append("text")
+            .attr("class", "regularText")
             .text("Keywords: ")
             .attr("x", xAxis)
-            .attr("y", yAxis += yMargin)
-            .attr("font-size", regularTextSize);
+            .attr("y", yAxis += yMargin);
 
-        var keywordsArray = getKeywordsArray(dIn.keywords);
+
         xAxis += xMargin;
 
-        for (var index = 0; index < keywordsArray.length; index++) {
+        for (var key in keywords) {
             svg.append("text")
-                .text(keywordsArray[index])
+                .attr("class", "sublistText")
+                .text(key + " : " + keywords[key])
                 .attr("x", xAxis)
-                .attr("y", yAxis += yMargin)
-                .attr("font-size", sublistTextSize);
+                .attr("y", yAxis += yMargin);
         }
 
         xAxis -= xMargin;
 
         svg.append("text")
+            .attr("class", "regularText")
             .text("Height: " + dIn.height)
             .attr("x", xAxis)
-            .attr("y", yAxis += yMargin)
-            .attr("font-size", regularTextSize);
+            .attr("y", yAxis += yMargin);
 
         svg.append("text")
+            .attr("class", "regularText")
             .text("Width: " + dIn.width)
             .attr("x", xAxis)
-            .attr("y", yAxis += yMargin)
-            .attr("font-size", regularTextSize);
+            .attr("y", yAxis += yMargin);
 
         yAxis += yMargin;
         d3.select("#clickMessageDrawing").style("height", yAxis.toString() + "px");
     };
 
-    var getKeywordsArray = function(keywordsString) {
-        keywordsString = keywordsString.replace(/(u')*['\]\[{}]*/g, "");
-        keywordsString = keywordsString.split(",");
-        return keywordsString;
-    };
-
     var repaintRect = function(selection) {
         var typePos = selection.attr("type");
         var valuePos = selection.attr("value");
-
-        if (typePos == DEADLINE_TIME_BLOCK_TYPE) {
-            selection.style("fill", dataModel.colors[valuePos]);
-        } else if (typePos == PRIORITY_TIME_BLOCK_TYPE) {
-            selection.style("fill", "url(#diagonalHatch)");
-        }
+        selection.style("fill", oldColor);
     };
-
 
     return this;
 };

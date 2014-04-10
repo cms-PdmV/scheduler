@@ -76,8 +76,10 @@
 					<ul id="fileList">
 						<li ng-repeat="file in fileList" id="fileListItem">
 							<input type="checkbox" ng-model="file.state" ng-click="fileListSave($index)">
-							<label class="input-label"> {{file.label}}</label>
-							<input type="button" value="X" id="deleteFile" ng-click="deleteFile($index)">
+							<label class="input-label" ng-click="fileListSave($index)"> {{file.label}}</label>
+							<input type="button" value="X" class="smallButton"ng-click="deleteFile($index)">
+							<input type="button" value="i" class="smallButton"
+							ng-click="displayFileContent($index)">
 						</li>
 					</ul>
 				</div>
@@ -100,7 +102,7 @@
 					<!-- <p>Value: {{request.value}}</p> -->
 					<p>Event Start Number: {{request.event}}</p>
 					<p>Event Start Date: {{request.hour}}</p>
-					<!-- <p>Keywords: {{request.keywords}}</p> -->
+					<p>Prepid: {{request.keywords.prepid}}</p>
 					<p>Height: {{request.height}}</p>
 					<!-- <p>Width: {{request.width}}</p> -->
 				</li>

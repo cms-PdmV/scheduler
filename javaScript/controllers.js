@@ -72,6 +72,7 @@ schedulerModule.controller("Scheduler", function($scope, $http, $upload) {
                     addFileToList(fileListArray[index], true);
                 }
             }
+            $scope.saveConfig();
         });
     };
 
@@ -187,6 +188,7 @@ schedulerModule.controller("Scheduler", function($scope, $http, $upload) {
             }
             $scope.schedule();
             addFileToList($scope.uploadSaveLabel, true);
+            $scope.saveConfig();
         });
     };
 
@@ -220,6 +222,7 @@ schedulerModule.controller("Scheduler", function($scope, $http, $upload) {
             $scope.schedule();
 
             addFileToList($scope.labelUrl, true);
+            $scope.saveConfig();
         });
     };
 
@@ -238,6 +241,37 @@ schedulerModule.controller("Scheduler", function($scope, $http, $upload) {
             $scope.fileList.splice([fileIndex], 1);
             $scope.saveConfig();
         });
+    };
+
+    $scope.displayFileContent = function(fileIndex) {
+        removePopupMessage();
+        var titleTextSize = "15px";
+        var sublistTextSize = "11px";
+
+        $http({
+            url: "getFileContent?filename=" + $scope.fileList[fileIndex].label,
+        }).success(function(data) {
+            var msgDiv = d3.select("#clickMessage").append("div")
+                .attr("id", "messageDiv")
+                .on("click", removePopupMessage);
+
+            msgDiv.append("input")
+                .attr("id", "closeMessage")
+                .attr("type", "button")
+                .attr("value", "X")
+                .on("click", removePopupMessage);
+
+            msgDiv.append("p")
+                .text("Filename - " + $scope.fileList[fileIndex].label)
+                .attr("id", "fileDataTitle")
+                .attr("font-size", titleTextSize);
+
+            msgDiv.append("p")
+                .text(data)
+                .attr("font-size", sublistTextSize)
+                .style("margin", "10px");
+        });
+
     };
 
     $scope.fileListSave = function(fileIndex) {
@@ -265,12 +299,15 @@ schedulerModule.controller("Scheduler", function($scope, $http, $upload) {
         });
     };
 
+    var removePopupMessage = function() {
+        d3.select("#messageDiv").remove();
+    };
+
     var addFileToList = function(filename, state) {
         var fileObject = {};
         fileObject.state = state;
         fileObject.label = filename;
         $scope.fileList.push(fileObject);
-        $scope.saveConfig();
     };
 
     var isEmptyError = function(item, message) {
@@ -292,7 +329,6 @@ schedulerModule.controller("Scheduler", function($scope, $http, $upload) {
     };
 
     var redraw = function() {
-        // Point to Run Javascript
         var scheduler = new Scheduler.MainScheduler();
         scheduler.removeTableFunc();
 

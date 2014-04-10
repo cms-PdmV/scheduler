@@ -11,12 +11,6 @@ WIDTH_CONST = 28800
 
 class CustomRequestHandler(DataParser):
 
-	def __init__(self):
-		self.couchDest = Couch(SERVERDB_NAME, SERVERDB_PORT)
-
-	def insertDocToDb(self, doc):
-		return self.couchDest.saveDoc(DATABASE_NAME, doc)
-
 	def main(self, requestFile):
 		docArray = []
 		line1 = requestFile.next()
@@ -45,7 +39,6 @@ class CustomRequestHandler(DataParser):
 		eventsIndex = enumeratedDict['events']
 		timeIndex = enumeratedDict['time']
 		priorityIndex = enumeratedDict['priority']
-		authorIndex = enumeratedDict['author']
 		groupsIndex = enumeratedDict['groups']
 		statusIndex = enumeratedDict['status']
 		prepidIndex = enumeratedDict['prepid']
@@ -76,7 +69,6 @@ class CustomRequestHandler(DataParser):
 		if (parsedPriority == None):
 			parsedPriority = 1
 
-		resultJSON["autor"] = row[authorIndex]
 		resultJSON["groups"] = row[groupsIndex]
 		keywordsJSON = {}
 		keywordsJSON["status"] = row[statusIndex]
@@ -107,14 +99,14 @@ class CustomRequestHandler(DataParser):
 		return column
 
 	def isDataMissing(self, data):
-		keys = ["author","events","groups","priority","time", "status", "prepid", "energy", "pwg", "member of campaign", "type"]
+		keys = ["events","groups","priority","time", "status", "prepid", "energy", "pwg", "member of campaign", "type"]
 		for key in keys:
 			if (key not in data):
 				return "'" + key + "'" + " data is missing."
 		return "ok"
 
 	def enumerateList(self, list):
-		keys = ["author","events","groups","keywords","priority","deadline","time", "status", "prepid", "energy", "pwg", "member of campaign", "type"]
+		keys = ["events","groups","keywords","priority","deadline","time", "status", "prepid", "energy", "pwg", "member of campaign", "type"]
 		enumeratedDict = {}
 
 		for index, item in enumerate(list):

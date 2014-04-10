@@ -44,7 +44,6 @@ class Root(object):
             os.makedirs(CSV_FOLDER_NAME)
         with open(CSV_FOLDER_NAME + '/' + filename, 'wb') as cvsfile:
             cvsfile.write(filedata)
-        cvsfile.closed
 
     def getUploadedFileList(self):
         if not os.path.exists(CSV_FOLDER_NAME):
@@ -60,15 +59,19 @@ class Root(object):
     def getSources(self):
         with open(SOURCE_CONFIG, 'rb') as srcFile:
             dataString = srcFile.read()
-        srcFile.closed
         return dataString
     getSources.exposed = True
 
     def setSources(self, **configData):
         with open(SOURCE_CONFIG, 'wb') as srcFile:
             srcFile.write(str(configData['data']))
-        srcFile.closed
     setSources.exposed = True
+
+    def getFileContent(self, **parameters):
+        with open(CSV_FOLDER_NAME + '/' + parameters['filename'], 'rb') as srcFile:
+            dataString = srcFile.read()
+        return dataString
+    getFileContent.exposed = True
 
     def validateAndTransform(self, data):
         input_file = csv.reader(StringIO.StringIO(data), csv.excel)
