@@ -252,11 +252,11 @@ schedulerModule.controller("Scheduler", function($scope, $http, $upload) {
             url: "getFileContent?filename=" + $scope.fileList[fileIndex].label,
         }).success(function(data) {
             var msgDiv = d3.select("#clickMessage").append("div")
-                .attr("id", "messageDiv")
-                .on("click", removePopupMessage);
+                .attr("id", "messageDivFile")
+                .on("dblclick", removePopupMessage);
 
             msgDiv.append("input")
-                .attr("id", "closeMessage")
+                .attr("id", "closeMessageFile")
                 .attr("type", "button")
                 .attr("value", "X")
                 .on("click", removePopupMessage);
@@ -300,6 +300,7 @@ schedulerModule.controller("Scheduler", function($scope, $http, $upload) {
     };
 
     var removePopupMessage = function() {
+        d3.select("#messageDivFile").remove();
         d3.select("#messageDiv").remove();
     };
 

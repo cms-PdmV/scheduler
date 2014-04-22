@@ -421,6 +421,10 @@ class Scheduler:
         while pBlockIndex >= 0:
           pBlockI = priorityBlocks[pBlockIndex]
 
+          if (pBlockI.timePartCount.days > 30):
+                pBlockIndex = pBlockIndex -1
+                continue
+
           while pBlockI.eventsCount > self.inputDataModel.eventAxis:
                 pBlockI.eventsCount = pBlockI.eventsCount / 2
                 pBlockI.timePartCount = pBlockI.timePartCount * 2
@@ -433,7 +437,7 @@ class Scheduler:
             deadlineSpaceIndex = deadlineSpaceIndex +1
 
             if deadlineSpaceIndex == len(self.deadlineSpaces):
-              break;
+              deadlineSpaceIndex = 0
             continue;
 
           pBlockIndex = pBlockIndex -1;

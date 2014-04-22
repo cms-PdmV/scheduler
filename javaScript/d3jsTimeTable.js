@@ -223,7 +223,7 @@ Scheduler.SchedulerDataModelClass = function() {
     "use strict";
 
     this.initialization = function(startDateInput, endDateInput, data, customDates) {
-        this.totalWidth = 900;
+        this.totalWidth = 850;
         this.totalHeight = 530;
 
         this.dataSource = data.fields;
@@ -560,7 +560,7 @@ Scheduler.MainScheduler = function() {
         var labelDivHeigth = 500;
         var labelColorWidth = 15;
         var labelColorHeight = 15;
-        var schedulerWidth = dataModel.width + dataModel.margin.left + dataModel.margin.right;
+        var schedulerWidth = dataModel.width + dataModel.margin.left + dataModel.margin.right + 50;
         var schedulerHeight = dataModel.height + dataModel.margin.top + dataModel.margin.bottom;
         var titleX = 320;
         var titleY = -92;
@@ -909,6 +909,7 @@ Scheduler.EventListeners = function() {
 
     var removePopupMessage = function() {
         d3.select("#messageDiv").remove();
+        d3.select("#messageDivFile").remove();
 
         if (oldSelection) {
             var oldRect = d3.select(oldSelection);
@@ -954,7 +955,7 @@ Scheduler.EventListeners = function() {
 
         d3.select("#clickMessage").append("div")
             .attr("id", "messageDiv")
-            .on("click", removePopupMessage);
+            .on("dblclick", removePopupMessage);
 
         d3.select("#messageDiv").append("input")
             .attr("id", "closeMessage")
