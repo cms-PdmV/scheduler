@@ -421,7 +421,7 @@ class Scheduler:
         while pBlockIndex >= 0:
           pBlockI = priorityBlocks[pBlockIndex]
 
-          if (pBlockI.timePartCount.days > 30):
+          if (pBlockI.timePartCount.days > MAX_WIDTH):
                 pBlockIndex = pBlockIndex -1
                 continue
 

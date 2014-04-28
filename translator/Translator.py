@@ -9,8 +9,6 @@ from DataParser import DataParser
 
 class Translator(DataParser):
 
-    # deadlineBlockBool = True;
-
     def __init__(self):
         self.couchDest = Couch(DEST_HOST_NAME, DEST_DB_PORT)
 
@@ -88,25 +86,20 @@ class Translator(DataParser):
 
         priority = self.parseField(doc["priority"])
 
-        if (priority == None):
-            priority = 1
+        if (priority == None or priority < MIN_PRIORITY):
+            return None
 
         resultJSON["groups"] = ""
         resultJSON["keyWords"] = self.getKeywords(doc)
         resultJSON["priority"] = self.calculatePriority(priority)
+
+        resultJSON["keyWords"]["total events"] = parsedTotalEvents
 
         if("deadline" in doc and doc["deadline"]):
             resultJSON["type"] = "deadlineBlock"
             resultJSON["deadline"] = doc["deadline"]
         else:
             resultJSON["type"] = "priorityBlock"
-
-        # if(self.deadlineBlockBool):
-        #     self.deadlineBlockBool = False;
-        #     resultJSON["type"] = "deadlineBlock"
-        #     resultJSON["deadline"] = "2014-03-10 00:00:00"
-        # else:
-        #     resultJSON["type"] = "priorityBlock"
 
         return json.dumps(resultJSON)
 

@@ -1,30 +1,26 @@
-cheduler
+Scheduler
 ========
 
 CMS PdmV cheduler service
 
-How to run service:
+How to run service in SLE6:
 
 1) Download the source code
  a) source code stored on GitHub
-    https://github.com/cms-PdmV/cheduler
+    https://github.com/cms-PdmV/scheduler
 
 2) Run database
  a) Run couchDB (install)
-    bash $ couchDB
 
- b) Create test databases and insert there generated data.
-    bash $./couchDB/CERNCMSShedullerDatabaseGenerator{1-5}.bat
-
- c) Insert to each databases all Views which is described in file:
-    CERNCMSShedullerDatabase.txt
-     
-    http://127.0.0.1:5984/_utils/ ->  View -> Temporaty wiev.. ->
-    -> copy Map, Reduce function from file -> save
+ b) Create databases, views, generate data from source database. Source database and other configurations can be changed at /scheduler/translator/Config.py file.
+    To generate database and data run:
+        bash ./scheduler/translator/bin/RunTranslator.sh
 
 3) Run Web server
- a) Modife Config.py
+ a) Modify Config.py at /scheduler/Config.py
 
  b) Run cherrypy (install)
-    bash $ python Root.py
+
+ c) Run web server
+    python Root.py
 

@@ -975,7 +975,7 @@ Scheduler.EventListeners = function() {
 
         svg.append("text")
             .attr("class", "regularText")
-            .text("Value: " + dIn.value)
+            .text("Priority: " + dIn.value)
             .attr("x", xAxis += xMargin / 2)
             .attr("y", yAxis += yMargin);
 

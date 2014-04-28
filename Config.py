@@ -27,4 +27,5 @@ PLANDED_PRIORITY_TIME_BLOCKS_TYPE = "planedPriorityBlock"
 ###############################################################################
 
 EVENT_MAX = 86487
+MAX_WIDTH = 30
 DEBUG_MODE = False

@@ -12,9 +12,7 @@ class DataParser(object):
 		return result
 
 	def calculatePriority(self, priority):
-		result = priority / 10000
-		if(result > MAX_PRIORITY):
-			result = MAX_PRIORITY
+		result = priority
 		if(result < 0):
 			result = 0
 		return int(result)
